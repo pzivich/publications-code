@@ -909,8 +909,8 @@ class DoubleCrossfitAIPTW:
         # Calculating predictions for each sample split and each combination
         # TODO generalize this to arbitrary K
         s1_predictions = self._generate_predictions(sample_split[0], a_model_v=a_models[1], y_model_v=y_models[2])
-        s2_predictions = self._generate_predictions(sample_split[1], a_model_v=a_models[0], y_model_v=y_models[2])
-        s3_predictions = self._generate_predictions(sample_split[2], a_model_v=a_models[1], y_model_v=y_models[0])
+        s2_predictions = self._generate_predictions(sample_split[1], a_model_v=a_models[2], y_model_v=y_models[0])
+        s3_predictions = self._generate_predictions(sample_split[2], a_model_v=a_models[0], y_model_v=y_models[1])
 
         # Observed values of treatment and outcome
         y_obs = np.append(np.asarray(sample_split[0][self.outcome]),
@@ -1148,8 +1148,8 @@ class DoubleCrossfitTMLE:
 
         # Calculating predictions for each sample split and each combination
         s1_predictions = self._generate_predictions(sample_split[0], a_model_v=a_models[1], y_model_v=y_models[2])
-        s2_predictions = self._generate_predictions(sample_split[1], a_model_v=a_models[0], y_model_v=y_models[2])
-        s3_predictions = self._generate_predictions(sample_split[2], a_model_v=a_models[1], y_model_v=y_models[0])
+        s2_predictions = self._generate_predictions(sample_split[1], a_model_v=a_models[2], y_model_v=y_models[0])
+        s3_predictions = self._generate_predictions(sample_split[2], a_model_v=a_models[0], y_model_v=y_models[1])
 
         # Observed values of treatment and outcome
         y_obs = np.append(np.asarray(sample_split[0][self.outcome]),
