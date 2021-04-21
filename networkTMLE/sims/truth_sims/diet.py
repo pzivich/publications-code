@@ -1,0 +1,45 @@
+import numpy as np
+
+from beowulf.dgm import diet_dgm_truth
+from beowulf import load_uniform_diet, load_random_diet
+
+n_sims_truth = 10000
+treat_plan = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+              0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, .95]
+np.random.seed(30202001)
+
+################################
+# Uniform
+################################
+truth = {}
+G = load_uniform_diet()
+for t in treat_plan:
+    ans = []
+    for i in range(n_sims_truth):
+        ans.append(diet_dgm_truth(network=G, pr_a=t))
+
+    truth[t] = np.mean(ans)
+
+print("===============================")
+print("Uniform")
+print("-------------------------------")
+print(truth)
+print("===============================")
+
+################################
+# Clustered Power-Law
+################################
+truth = {}
+G = load_random_diet()
+for t in treat_plan:
+    ans = []
+    for i in range(n_sims_truth):
+        ans.append(diet_dgm_truth(network=G, pr_a=t))
+
+    truth[t] = np.mean(ans)
+
+print("===============================")
+print("Random")
+print("-------------------------------")
+print(truth)
+print("===============================")
