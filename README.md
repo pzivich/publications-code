@@ -1,12 +1,26 @@
 # Publicly Available Code
 
 This repository is a collection of publicly available code from my past publications. This repository is for 
-storage and reference. More up-to-date versions will be intergrated into my open-source libraries when applicable.
+storage and reference. Any code here that later becomes available in an open-source library, will be pointed to in
+the corresponding `README.md` file for each publication.
 
-## Organization
+-------------------------------------
+-------------------------------------
 
-Code corresponding to projects are designated by the publication DOI. For publications on arXiv, they are designated 
-as such. When published, the arXiv identifier is replaced by the publication DOI.
+## Manifesto
 
-Each folder will include its only README.md file including the title, abstract, and description of the code structure. 
-As integrated into other open-source libraries, I will also link to the functionality.
+-------------------------------------
+
+### AssortativityBias
+Zivich PN, Volfovsky A, Moody J, Aiello AE. "Assortativity can lead to bias in epidemiologic studies of contagious 
+outcomes: a simulated example in the context of vaccination". Forthcoming. 2021;
+
+### DoubleCrossFit
+Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
+2021;32(3):393-401
+
+### networkTMLE
+Zivich PN, Hudgens MG, Brookhart MA, Moody J, Weber DJ, Aiello AE. "Targeted maximum likelihood estimation of causal
+effects with interference: a simulation study". *Under Review*. 2021;
+
+-------------------------------------
