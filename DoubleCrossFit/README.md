@@ -1,8 +1,14 @@
 # Machine learning for causal inference: on the use of cross-fit estimators 
 
-## Paul N Zivich, Alexander Breskin
+### Paul N Zivich, Alexander Breskin
 
-### ABSTRACT
+**Citation**: Zivich PN, and Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators." 
+*Epidemiology* 32.3 (2021): 393-401.
+
+--------------------------------
+
+## Abstract
+
 Modern causal inference methods allow machine learning to be used to weaken parametric modeling assumptions. However, 
 the use of machine learning may result in bias and incorrect inferences due to overfitting. Cross-fit estimators have 
 been proposed to eliminate this bias and yield better statistical properties.
@@ -22,10 +28,9 @@ Due to the difficulty of properly specifying parametric models in high dimension
 ensemble learning and cross-fitting may be the preferred approach for estimation of the ACE in most epidemiologic 
 studies. However, these approaches may require larger sample sizes to avoid finite-sample issues.
 
-**Full text:** 
-https://arxiv.org/abs/2004.10337
+--------------------------------
 
-## Code Structure
+## File Manifesto
 
 ### Python
 The main simulation files are contained in the `Python/` path. Simulations presented in the paper were completed using 
