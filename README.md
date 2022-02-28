@@ -13,7 +13,7 @@ the corresponding `README.md` file for each publication.
 
 ### AssortativityBias
 Zivich PN, Volfovsky A, Moody J, Aiello AE. "Assortativity can lead to bias in epidemiologic studies of contagious 
-outcomes: a simulated example in the context of vaccination". Forthcoming. 2021;
+outcomes: a simulated example in the context of vaccination". Forthcoming. 2021
 
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
@@ -21,6 +21,15 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 
 ### networkTMLE
 Zivich PN, Hudgens MG, Brookhart MA, Moody J, Weber DJ, Aiello AE. "Targeted maximum likelihood estimation of causal
-effects with interference: a simulation study". *Under Review*. 2021;
+effects with interference: a simulation study". *Under Review*. 2021
+
+### ReBalancingIntercept
+Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisiting the balancing intercept'". 
+*Under Review*. 2022
+
+### TwisterPlots
+Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
+190(12), 2730-2731.
+
 
 -------------------------------------
