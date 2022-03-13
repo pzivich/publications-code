@@ -28,7 +28,8 @@ def statin_dgm(network, restricted=False):
     data['statin'] = statin
 
     if restricted:  # if we are in the restricted scenarios
-        attrs = exposure_restrictions(network=network.graph['label'], exposure='statin')
+        attrs = exposure_restrictions(network=network.graph['label'], exposure='statin',
+                                      n=nx.number_of_nodes(graph))
         data.update(pd.DataFrame(list(attrs.values()), index=list(attrs.keys()), columns=['statin']))
 
     # Running Data Generating Mechanism for Y
@@ -62,7 +63,8 @@ def statin_dgm_truth(network, pr_a, shift=False, restricted=False):
     data['statin'] = statin
 
     if restricted:  # removing other observations from the restricted set
-        attrs = exposure_restrictions(network=network.graph['label'], exposure='statin')
+        attrs = exposure_restrictions(network=network.graph['label'], exposure='statin',
+                                      n=nx.number_of_nodes(graph))
         exclude = list(attrs.keys())
         data = data.loc[~data.index.isin(exclude)].copy()
 
@@ -70,4 +72,10 @@ def statin_dgm_truth(network, pr_a, shift=False, restricted=False):
     pr_y = logistic.cdf(-5.05 - 0.8*data['statin'] + 0.37*(np.sqrt(data['A']-39.9))
                         + 0.75*data['R'] + 0.75*data['L'])
     cvd = np.random.binomial(n=1, p=pr_y, size=data.shape[0])
+
+    if restricted:
+        data['cvd'] = cvd
+        data = data.loc[~data.index.isin(exclude)].copy()
+        cvd = np.array(data['cvd'])
+
     return np.mean(cvd)

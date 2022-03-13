@@ -9,7 +9,7 @@ import pandas as pd
 import networkx as nx
 from scipy.stats import logistic
 
-from beowulf import load_uniform_network, load_random_network
+from beowulf import load_uniform_network, load_random_network, load_exflu_network
 
 
 def statin_baseline_dgm(graph, number_of_nodes):
@@ -58,10 +58,10 @@ def statin_baseline_dgm(graph, number_of_nodes):
 np.random.seed(20200123)
 
 ###################################
-# Mostly-uniform Network
+# Uniform Network
 ###################################
-G = load_uniform_network()
-w_dist = statin_baseline_dgm(G, number_of_nodes=nx.number_of_nodes(G))
+G = load_uniform_network(n1k=False)
+w_dist = statin_baseline_dgm(G, number_of_nodes=nx.number_of_nodes(G)).sort_values(by='id')
 w_dist.to_csv("dgm-statin-uniform.csv", index=False)
 
 print("=========================================")
@@ -73,9 +73,48 @@ print("=========================================")
 ###################################
 # Clustered Power-Law Network
 ###################################
-H = load_random_network()
-w_dist = statin_baseline_dgm(H, number_of_nodes=nx.number_of_nodes(H))
+H = load_random_network(n1k=False)
+w_dist = statin_baseline_dgm(H, number_of_nodes=nx.number_of_nodes(H)).sort_values(by='id')
 w_dist.to_csv("dgm-statin-cpl.csv", index=False)
+
+print("=========================================")
+print("Clustered Power-Law Network")
+print("-----------------------------------------")
+print(w_dist[['A', 'L', 'D', 'R']].describe())
+print("=========================================")
+
+###################################
+# eX-FLU Network
+###################################
+N = load_exflu_network(filepath="/mnt/ARG/All_Team/ARG_Team/Paul/eXFLU/exflu_edges.csv")
+w_dist = statin_baseline_dgm(N, number_of_nodes=nx.number_of_nodes(N)).sort_values(by='id')
+w_dist.to_csv("dgm-statin-exflu.csv", index=False)
+
+print("=========================================")
+print("eX-FLU Network")
+print("-----------------------------------------")
+print(w_dist[['A', 'L', 'D', 'R']].describe())
+print("=========================================")
+
+###################################
+# Uniform Network (1K)
+###################################
+U = load_uniform_network(n1k=True)
+w_dist = statin_baseline_dgm(U, number_of_nodes=nx.number_of_nodes(U)).sort_values(by='id')
+w_dist.to_csv("dgm-statin-uniform-1k.csv", index=False)
+
+print("=========================================")
+print("Uniform Network")
+print("-----------------------------------------")
+print(w_dist[['A', 'L', 'D', 'R']].describe())
+print("=========================================")
+
+###################################
+# Clustered Power-Law Network (1K)
+###################################
+V = load_random_network(n1k=True)
+w_dist = statin_baseline_dgm(V, number_of_nodes=nx.number_of_nodes(V)).sort_values(by='id')
+w_dist.to_csv("dgm-statin-cpl-1k.csv", index=False)
 
 print("=========================================")
 print("Clustered Power-Law Network")

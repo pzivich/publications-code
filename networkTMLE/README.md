@@ -4,7 +4,16 @@
 
 ### ABSTRACT
 
-Interference, the dependency of an individual’s potential outcome on the exposure of other individuals, is a common occurrence across medicine and public health. Recently, targeted maximum likelihood estimation (TMLE) has been extended to settings of interference, including in the context of estimation of the overall mean of an outcome under a specified distribution of exposure, referred to as a policy. This paper summarizes how TMLE for independent data (IID-TMLE) is extended to general interference (network-TMLE). An extensive simulation study is presented comparing network-TMLE and IID-TMLE. We simulated four data generating mechanisms (unit-treatment effect only, spillover effects only, unit-treatment and spillover effects, infection transmission) in three different networks (uniform random graph, clustered power-law random graph, self-reported contact network). Simulations show that network-TMLE performs well across scenarios with interference, unlike IID-TMLE. However, issues for network-TMLE manifest when policies are not well-supported by the observed data, potentially leading to poor confidence interval coverage and bias. Guidance for practical application, freely available software, and areas of future work are provided.
+Interference, the dependency of an individual’s potential outcome on the exposure of other individuals, is a common
+occurrence in medicine and public health. Recently, targeted maximum likelihood estimation (TMLE) has been extended to
+settings of interference, including in the context of estimation of the overall mean of an outcome under a specified
+distribution of exposure, referred to as a policy. This paper summarizes how TMLE for independent data is extended to
+general interference (network-TMLE). An extensive simulation study is presented of network-TMLE, consisting of four
+data generating mechanisms (unit-treatment effect only, spillover effects only, unit-treatment and spillover effects,
+infection transmission) in networks of varying structures. Simulations show that network-TMLE performs well across
+scenarios with interference but issues manifest when policies are not well-supported by the observed data, potentially
+leading to poor confidence interval coverage. Guidance for practical application, freely available software, and areas
+of future work are provided.
 
 ## Code Structure
 
@@ -47,7 +56,6 @@ and management of the simulated data (`beowulf`).
 
 For example use of `NetworkTMLE` and the data generating mechanisms see the `example_usage.py` 
 file. Also see documentation within each function, or by calling `help(NetworkTMLE)`
-
 
 ### References
 

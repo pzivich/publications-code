@@ -14,7 +14,7 @@ from scipy.stats.kde import gaussian_kde
 from amonhen.utils import (network_to_df, fast_exp_map, exp_map_individual, tmle_unit_bounds, tmle_unit_unbound,
                            probability_to_odds, odds_to_probability, bounding, check_conditional,
                            outcome_learner_fitting, outcome_learner_predict, exposure_machine_learner,
-                           targeting_step, create_threshold)
+                           targeting_step, create_threshold, create_categorical)
 
 
 class NetworkTMLE:
@@ -114,7 +114,9 @@ class NetworkTMLE:
             self._check_degree_restrictions_(bounds=degree_restrict)
 
         # Allowing for non-consecutive IDs
-        network = nx.convert_node_labels_to_integers(network, first_label=0, label_attribute='_original_id_')
+        network = nx.convert_node_labels_to_integers(network,
+                                                     first_label=0,   # MUST be `0` for later latent variance calc
+                                                     label_attribute='_original_id_')
         self.network = network
         self.exposure = exposure
         self.outcome = outcome
@@ -187,6 +189,8 @@ class NetworkTMLE:
         self.marginal_outcome = None
         self.conditional_variance = None
         self.conditional_ci = None
+        self.conditional_latent_variance = None
+        self.conditional_latent_ci = None
 
         # Storage for items I need later
         self.alpha = alpha
@@ -202,10 +206,15 @@ class NetworkTMLE:
         self._denominator_ = None
         self._denominator_estimated_ = False
         self._verbose_ = verbose
+
         self._thresholds_ = []
         self._thresholds_variables_ = []
         self._thresholds_def_ = []
         self._thresholds_any_ = False
+        self._categorical_ = []
+        self._categorical_variables_ = []
+        self._categorical_def_ = []
+        self._categorical_any_ = False
 
         # Custom model / machine learner storage
         self._gi_custom_ = None
@@ -461,13 +470,25 @@ class NetworkTMLE:
         self._specified_p_ = p
 
         # 5) Variance estimation
-        var_cond = self._est_variance_conditional_(iptw=h_iptw,  # Conditional variance (conditional on W)
+        zalpha = norm.ppf(1 - self.alpha / 2, loc=0, scale=1)
+
+        # Variance: direct-only, conditional on W
+        var_cond = self._est_variance_conditional_(iptw=h_iptw,
                                                    obs_y=y_,
                                                    pred_y=yq0_)
         self.conditional_variance = var_cond
-        zalpha = norm.ppf(1 - self.alpha / 2, loc=0, scale=1)
         self.conditional_ci = [self.marginal_outcome - zalpha*np.sqrt(var_cond),
                                self.marginal_outcome + zalpha*np.sqrt(var_cond)]
+
+        # Variance: direct and latent, conditional on W
+        var_lcond = self._est_variance_latent_conditional_(iptw=h_iptw,
+                                                           obs_y=y_,
+                                                           pred_y=yq0_,
+                                                           adj_matrix=self.adj_matrix,
+                                                           excluded_ids=self._exclude_ids_degree_)
+        self.conditional_latent_variance = var_lcond
+        self.conditional_latent_ci = [self.marginal_outcome - zalpha*np.sqrt(var_lcond),
+                                      self.marginal_outcome + zalpha*np.sqrt(var_lcond)]
 
     def summary(self, decimal=3):
         """Prints summary results for the sample average treatment effect under the treatment plan specified in
@@ -528,8 +549,8 @@ class NetworkTMLE:
         print('======================================================================')
 
     def diagnostics(self):
-        """Returns diagnostics for the specified NetworkTMLE. Evaluates common diagnostics for the IPW and g-formula
-        models used in the IID setting. Also provides a plot to assess the positivity assumption
+        """Returns diagnostics. Evaluates common diagnostics for the IPW and g-formula models used in the IID setting.
+        Also provides a plot to assess the positivity assumption
 
         Returns
         -------
@@ -623,6 +644,17 @@ class NetworkTMLE:
         self._thresholds_def_.append(definition)
         create_threshold(self.df_restricted,
                          variables=[variable], thresholds=[threshold], definitions=[definition])
+
+    def define_category(self, variable, bins, labels):
+        """Function arbitrarily allows for multiple different defined categories
+        """
+        self._categorical_any_ = True
+        self._categorical_variables_.append(variable)
+        self._categorical_.append(bins)
+        self._categorical_def_.append(labels)
+        create_categorical(data=self.df_restricted,
+                           variables=[variable], bins=[bins], labels=[labels],
+                           verbose=True)
 
     def _estimate_iptw_(self, p, samples, bound, seed):
         """Background function to estimate the IPTW based on the algorithm described in Sofrygin & van der Laan (2017)
@@ -824,10 +856,16 @@ class NetworkTMLE:
                 for c in self._nonparam_cols_:
                     g[c] = df[c]
 
+            # Re-creating any threshold variables in the pooled sample data
             if self._thresholds_any_:
                 create_threshold(data=g, variables=self._thresholds_variables_,
                                  thresholds=self._thresholds_, definitions=self._thresholds_def_)
 
+            # Re-creating any categorical variables in the pooled sample data
+            if self._categorical_any_:
+                create_categorical(data=g, variables=self._categorical_variables_,
+                                   bins=self._categorical_, labels=self._categorical_def_,
+                                   verbose=False)
             g['_sample_id_'] = s
             pooled_sample.append(g)
 
@@ -970,6 +1008,30 @@ class NetworkTMLE:
         return np.mean((iptw * (obs_y - pred_y))**2) / iptw.shape[0]
 
     @staticmethod
+    def _est_variance_latent_conditional_(iptw, obs_y, pred_y, adj_matrix, excluded_ids=None):
+        """Variance estimator from Sofrygin & van der Laan 2017; section 6.3
+        Interpretation is conditional on observed W. The advantage is narrower confidence intervals and easier to
+        estimate for the cost of reduced interpretation capacity
+        """
+        # Matrix of all possible pairs of pseudo-outcomes
+        pseudo_y = iptw * (obs_y - pred_y)
+        pseudo_y_matrix = np.outer(pseudo_y, pseudo_y)
+
+        # Fill in the diagonal with 1's (ensures i's self-pair contributes to the variance)
+        pair_matrix = adj_matrix.toarray()  # create a paired matrix from the adjacency
+        np.fill_diagonal(pair_matrix, val=1)  # everyone becomes a friend with themselves for the variance
+
+        # If there is a degree restriction, the following code is needed. Briefly, it fills-in Zeros in the pseudo-Y
+        #   matrix, so it is the same dimensions as the adjacency matrix. This is better than a for loop
+        if excluded_ids is not None:
+            for eids in sorted(excluded_ids):  # need to for loop over so all are inserted at correct spot!!
+                pseudo_y_matrix = np.insert(pseudo_y_matrix, obj=eids, values=0, axis=1)
+                pseudo_y_matrix = np.insert(pseudo_y_matrix, obj=eids, values=0, axis=0)
+
+        # var is sum over element-wise multiplied matrices
+        return np.sum(pair_matrix * pseudo_y_matrix) / (iptw.shape[0]**2)  # squared here since np.sum replaces np.mean
+
+    @staticmethod
     def _check_distribution_measure_(distribution, measure):
         """Checks whether the distribution and measure specified are compatible"""
         if distribution is None:
@@ -982,7 +1044,7 @@ class NetworkTMLE:
             if measure not in ['sum', 'mean']:
                 raise ValueError("The distribution `"+str(distribution)+"` and `"+str(measure)+"` are not compatible")
         elif distribution.lower() == 'multinomial':
-            if measure not in ['sum']:
+            if measure not in ['sum', 'sum_c', 'mean_c', 'var_c', 'mean_dist_c', 'var_dist_c']:
                 raise ValueError("The distribution `"+str(distribution)+"` and `"+str(measure)+"` are not compatible")
         elif distribution.lower() == 'binomial':
             if measure not in ['mean']:

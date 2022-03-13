@@ -18,18 +18,32 @@ def network_generator(edgelist, source, target, label):
     return graph
 
 
-def load_uniform_network():
+def load_uniform_network(n=500):
     # file path to uniform network.
-    edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-uniform.csv'), index_col=False)
+    if n == 500:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-uniform.csv'), index_col=False)
+    elif n == 1000:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-uniform-1k.csv'), index_col=False)
+    elif n == 2000:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-uniform-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
 
     # call network_generator function
     graph = network_generator(edgelist, source='source', target='target', label='uniform')
     return graph
 
 
-def load_random_network():
+def load_random_network(n=500):
     # file path to uniform network.
-    edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-random.csv'), index_col=False)
+    if n == 500:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-random.csv'), index_col=False)
+    elif n == 1000:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-random-1k.csv'), index_col=False)
+    elif n == 2000:
+        edgelist = pd.read_csv(resource_filename('beowulf', 'data_files/network-random-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
 
     # call network_generator function
     graph = network_generator(edgelist, source='source', target='target', label='random')
@@ -51,6 +65,8 @@ def generate_sofrygin_network(n, max_degree=2, seed=None):
         degree_dist = list(np.random.randint(0, max_degree+1, size=n))
         sum = np.sum(degree_dist)
 
+    # G = nx.expected_degree_graph(degree_dist, seed=seed, selfloops=False)
+    # This approach does not work... it will generate edges outside that n
     G = nx.configuration_model(degree_dist, seed=seed)
     # Removing multiple edges!
     G = nx.Graph(G)
@@ -65,24 +81,22 @@ def generate_sofrygin_network(n, max_degree=2, seed=None):
     return G
 
 
-def load_uniform_naloxone():
-    graph = load_uniform_network()
+###############################################################
+# Statin - ASCVD
+
+def load_uniform_statin(n=500):
+    graph = load_uniform_network(n=n)
 
     # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-uniform.csv'), index_col=False)
-    for n in graph.nodes():
-        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
-        graph.nodes[n]['Uc'] = int(attrs.loc[attrs['id'] == n, 'Uc'].values)
-        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
-        graph.nodes[n]['O'] = int(attrs.loc[attrs['id'] == n, 'O'].values)
-    return nx.convert_node_labels_to_integers(graph)
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-uniform.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-uniform-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-uniform-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
 
-
-def load_uniform_statin():
-    graph = load_uniform_network()
-
-    # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-uniform.csv'), index_col=False)
     attrs['R_1'] = np.where((attrs['R'] >= .05) & (attrs['R'] < .075), 1, 0)
     attrs['R_2'] = np.where((attrs['R'] >= .075) & (attrs['R'] < .2), 1, 0)
     attrs['R_3'] = np.where(attrs['R'] >= .2, 1, 0)
@@ -102,48 +116,19 @@ def load_uniform_statin():
     return nx.convert_node_labels_to_integers(graph)
 
 
-def load_uniform_diet():
-    graph = load_uniform_network()
+def load_random_statin(n=500):
+    graph = load_random_network(n=n)
 
     # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-uniform.csv'), index_col=False)
-    for n in graph.nodes():
-        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
-        graph.nodes[n]['B'] = int(attrs.loc[attrs['id'] == n, 'B'].values)
-        graph.nodes[n]['B_30'] = int(attrs.loc[attrs['id'] == n, 'B'].values) - 30
-        graph.nodes[n]['E'] = int(attrs.loc[attrs['id'] == n, 'E'].values)
-    return nx.convert_node_labels_to_integers(graph)
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-cpl.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-cpl-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-cpl-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
 
-
-def load_uniform_vaccine():
-    graph = load_uniform_network()
-
-    # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-uniform.csv'), index_col=False)
-    for n in graph.nodes():
-        graph.nodes[n]['A'] = int(attrs.loc[attrs['id'] == n, 'A'].values)
-        graph.nodes[n]['H'] = int(attrs.loc[attrs['id'] == n, 'H'].values)
-    return nx.convert_node_labels_to_integers(graph)
-
-
-def load_random_naloxone():
-    graph = load_random_network()
-
-    # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-cpl.csv'), index_col=False)
-    for n in graph.nodes():
-        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
-        graph.nodes[n]['Uc'] = int(attrs.loc[attrs['id'] == n, 'Uc'].values)
-        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
-        graph.nodes[n]['O'] = int(attrs.loc[attrs['id'] == n, 'O'].values)
-    return nx.convert_node_labels_to_integers(graph)
-
-
-def load_random_statin():
-    graph = load_random_network()
-
-    # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-statin-cpl.csv'), index_col=False)
     attrs['R_1'] = np.where((attrs['R'] >= .05) & (attrs['R'] < .075), 1, 0)
     attrs['R_2'] = np.where((attrs['R'] >= .075) & (attrs['R'] < .2), 1, 0)
     attrs['R_3'] = np.where(attrs['R'] >= .2, 1, 0)
@@ -153,6 +138,7 @@ def load_random_statin():
     for n in graph.nodes():
         graph.nodes[n]['A'] = int(attrs.loc[attrs['id'] == n, 'A'].values)
         graph.nodes[n]['L'] = float(attrs.loc[attrs['id'] == n, 'L'].values)
+        # graph.node[n]['D'] = int(attrs.loc[attrs['id'] == n, 'D'].values)
         graph.nodes[n]['R'] = float(attrs.loc[attrs['id'] == n, 'R'].values)
         graph.nodes[n]['R_1'] = int(attrs.loc[attrs['id'] == n, 'R_1'].values)
         graph.nodes[n]['R_2'] = int(attrs.loc[attrs['id'] == n, 'R_2'].values)
@@ -163,24 +149,135 @@ def load_random_statin():
     return nx.convert_node_labels_to_integers(graph)
 
 
-def load_random_diet():
-    graph = load_random_network()
+###############################################################
+# Naloxone - Opioid Overdose
+
+def load_uniform_naloxone(n=500):
+    graph = load_uniform_network(n=n)
 
     # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-cpl.csv'), index_col=False)
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-uniform.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-uniform-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-uniform-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
+    for n in graph.nodes():
+        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
+        graph.nodes[n]['Uc'] = int(attrs.loc[attrs['id'] == n, 'Uc'].values)
+        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
+        graph.nodes[n]['O'] = int(attrs.loc[attrs['id'] == n, 'O'].values)
+    return nx.convert_node_labels_to_integers(graph)
+
+
+def load_random_naloxone(n=500):
+    graph = load_random_network(n=n)
+
+    # adding attributes to the network
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-cpl.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-cpl-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-naloxone-cpl-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
+    for n in graph.nodes():
+        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
+        graph.nodes[n]['Uc'] = int(attrs.loc[attrs['id'] == n, 'Uc'].values)
+        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
+        graph.nodes[n]['O'] = int(attrs.loc[attrs['id'] == n, 'O'].values)
+    return nx.convert_node_labels_to_integers(graph)
+
+
+###############################################################
+# Diet - Body Mass Index
+
+
+def load_uniform_diet(n=500):
+    graph = load_uniform_network(n=n)
+
+    # adding attributes to the network
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-uniform.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-uniform-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-uniform-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
     for n in graph.nodes():
         graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
         graph.nodes[n]['B'] = int(attrs.loc[attrs['id'] == n, 'B'].values)
         graph.nodes[n]['B_30'] = int(attrs.loc[attrs['id'] == n, 'B'].values) - 30
         graph.nodes[n]['E'] = int(attrs.loc[attrs['id'] == n, 'E'].values)
+        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
     return nx.convert_node_labels_to_integers(graph)
 
 
-def load_random_vaccine():
-    graph = load_random_network()
+def load_random_diet(n=500):
+    graph = load_random_network(n=n)
 
     # adding attributes to the network
-    attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-cpl.csv'), index_col=False)
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-cpl.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-cpl-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-diet-cpl-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
+    for n in graph.nodes():
+        graph.nodes[n]['G'] = int(attrs.loc[attrs['id'] == n, 'G'].values)
+        graph.nodes[n]['B'] = int(attrs.loc[attrs['id'] == n, 'B'].values)
+        graph.nodes[n]['B_30'] = int(attrs.loc[attrs['id'] == n, 'B'].values) - 30
+        graph.nodes[n]['E'] = int(attrs.loc[attrs['id'] == n, 'E'].values)
+        graph.nodes[n]['P'] = int(attrs.loc[attrs['id'] == n, 'P'].values)
+    return nx.convert_node_labels_to_integers(graph)
+
+
+###############################################################
+# Vaccine - Infectious Disease
+
+
+def load_uniform_vaccine(n=500):
+    graph = load_uniform_network(n=n)
+
+    # adding attributes to the network
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-uniform.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-uniform-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-uniform-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
+    for n in graph.nodes():
+        graph.nodes[n]['A'] = int(attrs.loc[attrs['id'] == n, 'A'].values)
+        graph.nodes[n]['H'] = int(attrs.loc[attrs['id'] == n, 'H'].values)
+    return nx.convert_node_labels_to_integers(graph)
+
+
+def load_random_vaccine(n=500):
+    graph = load_random_network(n=n)
+
+    # adding attributes to the network
+    if n == 500:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-cpl.csv'), index_col=False)
+    elif n == 1000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-cpl-1k.csv'), index_col=False)
+    elif n == 2000:
+        attrs = pd.read_csv(resource_filename('beowulf', 'data_files/dgm-vaccine-cpl-2k.csv'), index_col=False)
+    else:
+        raise ValueError("Invalid N for the network")
+
     for n in graph.nodes():
         graph.nodes[n]['A'] = int(attrs.loc[attrs['id'] == n, 'A'].values)
         graph.nodes[n]['H'] = int(attrs.loc[attrs['id'] == n, 'H'].values)

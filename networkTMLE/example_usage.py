@@ -1,6 +1,6 @@
 ############################################################################################
-# Example of NetworkTMLE with simulated data generating mechanisms
-#   This file demonstrates basic usage of the NetworkTMLE class with some of the available
+# Example of Targetula with simulated data generating mechanisms
+#   This file demonstrates basic usage of the Targetula class with some of the available
 #       data generating mechanisms
 ############################################################################################
 

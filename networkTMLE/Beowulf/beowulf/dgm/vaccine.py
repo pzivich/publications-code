@@ -8,7 +8,8 @@ from beowulf.dgm.utils import (network_to_df, fast_exp_map, exposure_restriction
                                odds_to_probability, probability_to_odds)
 
 
-def vaccine_dgm(network, restricted=False, n_init_infect=7, time_limit=10, inf_duration=5):
+def vaccine_dgm(network, restricted=False,
+                time_limit=10, inf_duration=5):
     """
     Parameters
     ----------
@@ -16,8 +17,6 @@ def vaccine_dgm(network, restricted=False, n_init_infect=7, time_limit=10, inf_d
         input network
     restricted:
         whether to use the restricted treatment assignment
-    n_init_infect:
-        number of initial infections to start with
     time_limit:
         maximum time to let the outbreak go through
     inf_duration:
@@ -29,14 +28,19 @@ def vaccine_dgm(network, restricted=False, n_init_infect=7, time_limit=10, inf_d
     adj_matrix = nx.adjacency_matrix(graph, weight=None)
     data['A_sum'] = fast_exp_map(adj_matrix, np.array(data['A']), measure='sum')
     data['A_mean'] = fast_exp_map(adj_matrix, np.array(data['A']), measure='mean')
-    data['H_mean'] = fast_exp_map(adj_matrix, np.array(data['H']), measure='mean')
+    data['H_sum'] = fast_exp_map(adj_matrix, np.array(data['H']), measure='sum')
+    data = pd.merge(data, pd.DataFrame.from_dict(dict(network.degree),
+                                                 orient='index').rename(columns={0: 'F'}),
+                    how='left', left_index=True, right_index=True)
 
     # Running Data Generating Mechanism for A
-    pr_a = logistic.cdf(-1.9 + 1.75*data['A'] + 0.95*data['H'] + 1.2*data['H_mean'])
+    pr_a = logistic.cdf(-1.9 + 1.75*data['A'] + 1.*data['H']
+                        + 1.*data['H_sum'] + 1.3*data['A_sum'] - 0.65*data['F'])
     vaccine = np.random.binomial(n=1, p=pr_a, size=nx.number_of_nodes(graph))
     data['vaccine'] = vaccine
     if restricted:  # if we are in the restricted scenarios
-        attrs = exposure_restrictions(network=network.graph['label'], exposure='vaccine')
+        attrs = exposure_restrictions(network=network.graph['label'], exposure='vaccine',
+                                      n=nx.number_of_nodes(graph))
         data.update(pd.DataFrame(list(attrs.values()), index=list(attrs.keys()), columns=['vaccine']))
 
     # print("Pr(V):", np.mean(vaccine))
@@ -44,12 +48,12 @@ def vaccine_dgm(network, restricted=False, n_init_infect=7, time_limit=10, inf_d
         graph.nodes[n]['vaccine'] = int(data.loc[data.index == n, 'vaccine'].values)
 
     # Running outbreak simulation
-    graph = _outbreak_(graph, n_init_infect, duration=inf_duration, limit=time_limit)
+    graph = _outbreak_(graph, duration=inf_duration, limit=time_limit)
     return graph
 
 
 def vaccine_dgm_truth(network, pr_a, shift=False, restricted=False,
-                      n_init_infect=7, time_limit=10, inf_duration=5):
+                      time_limit=10, inf_duration=5):
     graph = network.copy()
     data = network_to_df(graph)
 
@@ -57,73 +61,81 @@ def vaccine_dgm_truth(network, pr_a, shift=False, restricted=False,
     if shift:  # If a shift in the Odds distribution is instead specified
         adj_matrix = nx.adjacency_matrix(graph, weight=None)
         data['A_sum'] = fast_exp_map(adj_matrix, np.array(data['A']), measure='sum')
-        data['H_mean'] = fast_exp_map(adj_matrix, np.array(data['H']), measure='mean')
-        prob = logistic.cdf(-1.9 + 1.75*data['A'] + 0.95*data['H'] + 1.2*data['H_mean'])
+        data['A_mean'] = fast_exp_map(adj_matrix, np.array(data['A']), measure='mean')
+        data['H_sum'] = fast_exp_map(adj_matrix, np.array(data['H']), measure='sum')
+        data = pd.merge(data, pd.DataFrame.from_dict(dict(network.degree),
+                                                     orient='index').rename(columns={0: 'F'}),
+                        how='left', left_index=True, right_index=True)
+        prob = logistic.cdf(-1.9 + 1.75 * data['A'] + 1. * data['H']
+                            + 1. * data['H_sum'] + 1.3 * data['A_sum'] - 0.65 * data['F'])
         odds = probability_to_odds(prob)
         pr_a = odds_to_probability(np.exp(np.log(odds) + pr_a))
 
     vaccine = np.random.binomial(n=1, p=pr_a, size=nx.number_of_nodes(graph))
     data['vaccine'] = vaccine
     if restricted:  # if we are in the restricted scenarios
-        attrs = exposure_restrictions(network=network.graph['label'], exposure='vaccine')
+        attrs = exposure_restrictions(network=network.graph['label'], exposure='vaccine',
+                                      n=nx.number_of_nodes(graph))
         data.update(pd.DataFrame(list(attrs.values()), index=list(attrs.keys()), columns=['vaccine']))
 
     for n in graph.nodes():
         graph.nodes[n]['vaccine'] = int(data.loc[data.index == n, 'vaccine'].values)
 
     # Running Data Generating Mechanism for Y
-    graph = _outbreak_(graph, n_init_infect, duration=inf_duration, limit=time_limit)
+    graph = _outbreak_(graph, duration=inf_duration, limit=time_limit)
     dis = []
     for nod, d in graph.nodes(data=True):
         dis.append(d['D'])
     return np.mean(dis)
 
 
-def _outbreak_(graph, n_init_infect, duration=5, limit=25):
+def _outbreak_(graph, duration, limit):
     """Outbreak simulation script in a single function"""
+    # Adding node attributes
+    for n, d in graph.nodes(data=True):
+        d['D'] = 0
+        d['R'] = 0
+        d['t'] = 0
+
+    # Selecting initial infections
     all_ids = [n for n in graph.nodes()]
-    prev = 0
-    while (prev > 0.95) | (prev < 0.05):
-        # Selecting initial infections
-        init_inf = random.sample(all_ids, n_init_infect)
+    # infected = random.sample(all_ids, 5)
+    if len(all_ids) <= 500:
+        infected = [4, 36, 256, 305, 443]
+    elif len(all_ids) == 1000:
+        infected = [4, 36, 256, 305, 443, 552, 741, 803, 825, 946]
+    elif len(all_ids) == 2000:
+        infected = [4, 36, 256, 305, 443, 552, 741, 803, 825, 946,
+                    1112, 1204, 1243, 1253, 1283, 1339, 1352, 1376, 1558, 1702]
+    else:
+        raise ValueError("Invalid network IDs")
 
-        # Adding node attributes
-        for n, d in graph.nodes(data=True):
-            d['R'] = 0
-            d['t'] = 0
-            if n in init_inf:  # Set initial infected nodes as infected
-                d['I'] = 1
-                d['D'] = 1
-            else:
-                d['I'] = 0  # Set all other nodes as uninfected
-                d['D'] = 0
+    # Running through infection cycle
+    time = 0
+    while time < limit:  # Simulate outbreaks until time-step limit is reached
+        time += 1
+        for inf in sorted(infected, key=lambda _: random.random()):
+            # Book-keeping for infected nodes
+            graph.nodes[inf]['D'] = 1
+            graph.nodes[inf]['t'] += 1
+            if graph.nodes[inf]['t'] > duration:
+                graph.nodes[inf]['I'] = 0         # Node is no longer infectious after this loop
+                graph.nodes[inf]['R'] = 1         # Node switches to Recovered
+                infected.remove(inf)
 
-        # Running through infection cycle
-        time = 0
-        while time < limit:  # Simulate outbreaks until time-step limit is reached
-            time += 1
-
-            for n, d in sorted(graph.nodes(data=True), key=lambda x: random.random()):
-                # Checking node infection / disease status
-                if d['I'] == 1:
-                    d['D'] = 1  # Disease status is yes
-                    d['t'] += 1  # Increase infection duration counter
-                # Checking duration of disease
-                if d['t'] > duration:
-                    d['I'] = 0  # Node is no longer infectious
-                    d['R'] = 1  # Node switches to Recovered
-
-                # Node "tries" to transmit infection to direct contacts
-                for neighbor in graph[n]:
-                    pr_y = logistic.cdf(-2.4
-                                        - 1.5*graph.nodes[neighbor]['vaccine'] - 0.4*d['vaccine']
-                                        + 1.5*graph.nodes[neighbor]['A']
-                                        - 0.4*graph.nodes[neighbor]['H'])
-                    graph.nodes[neighbor]['I'] = int(np.random.binomial(n=1, p=pr_y, size=1))
-
-        dis = []
-        for nod, d in graph.nodes(data=True):
-            dis.append(d['D'])
-        prev = np.mean(dis)
+            # Attempt infections of neighbors
+            for contact in nx.neighbors(graph, inf):
+                if graph.nodes[contact]["D"] == 1:
+                    pass
+                else:
+                    pr_y = logistic.cdf(- 2.5
+                                        - 1.0*graph.nodes[contact]['vaccine']
+                                        - 0.2*graph.nodes[inf]['vaccine']
+                                        + 1.0*graph.nodes[contact]['A']
+                                        - 0.2*graph.nodes[contact]['H'])
+                    if np.random.binomial(n=1, p=pr_y, size=1):
+                        graph.nodes[contact]['I'] = 1
+                        graph.nodes[contact]["D"] = 1
+                        infected.append(contact)
 
     return graph

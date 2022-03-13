@@ -306,3 +306,16 @@ def create_threshold(data, variables, thresholds, definitions):
         else:
             label = v + '_t' + str(t)
         data[label] = np.where(data[v + '_' + d] > t, 1, 0)
+
+
+def create_categorical(data, variables, bins, labels, verbose=False):
+    for v, b, l in zip(variables, bins, labels):
+        col_label = v + '_c'
+        data[col_label] = pd.cut(data[v],
+                                 bins=b, labels=l,
+                                 include_lowest=True).astype(float)
+        if verbose:
+            if np.any(data[col_label].isna()):
+                warnings.warn("It looks like some of your categories have missing values when being generated on the "
+                              "input data. Please check pandas.cut to make sure the `bins` and `labels` arguments are "
+                              "being used correctly.", UserWarning)

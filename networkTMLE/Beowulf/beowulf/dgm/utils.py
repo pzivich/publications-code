@@ -81,26 +81,93 @@ def network_to_df(graph):
     return pd.DataFrame.from_dict(dict(graph.nodes(data=True)), orient='index')
 
 
-def exposure_restrictions(network, exposure):
+def exposure_restrictions(network, exposure, n):
     if network == 'uniform':
         raise ValueError("No support for restricted-by-degree for the uniform network")
 
     elif network == 'random':
         if exposure == 'statin':
-            attrs = {3: {exposure: 1}, 93: {exposure: 0}, 98: {exposure: 0}, 153: {exposure: 1}, 201: {exposure: 0},
-                     202: {exposure: 0}, 203: {exposure: 0}, 350: {exposure: 1}, 353: {exposure: 1}, 358: {exposure: 1}}
+            if n == 500:
+                attrs = {3: {exposure: 1}, 121: {exposure: 0}, 140: {exposure: 0}, 149: {exposure: 0}, 196: {exposure: 0},
+                         247: {exposure: 1}, 279: {exposure: 1}, 381: {exposure: 1}, 390: {exposure: 1}, 391: {exposure: 1}, }
+            elif n == 1000:
+                attrs = {1: {exposure: 0}, 72: {exposure: 0}, 311: {exposure: 1}, 327: {exposure: 1}, 331: {exposure: 1},
+                         334: {exposure: 0}, 517: {exposure: 0}, 613: {exposure: 1}, 618: {exposure: 1}, 658: {exposure: 1},
+                         783: {exposure: 1}, 816: {exposure: 0}, 820: {exposure: 0}, 910: {exposure: 1}, 960: {exposure: 1}, }
+            elif n == 2000:
+                attrs = {1: {exposure: 0}, 118: {exposure: 0}, 306: {exposure: 1}, 321: {exposure: 0},
+                         410: {exposure: 0}, 411: {exposure: 1}, 450: {exposure: 0}, 530: {exposure: 0},
+                         567: {exposure: 0}, 571: {exposure: 0}, 602: {exposure: 0}, 606: {exposure: 0},
+                         641: {exposure: 0}, 661: {exposure: 0}, 681: {exposure: 1}, 690: {exposure: 1},
+                         691: {exposure: 1}, 729: {exposure: 1}, 821: {exposure: 0}, 836: {exposure: 0},
+                         858: {exposure: 0}, 901: {exposure: 0}, 939: {exposure: 1}, 973: {exposure: 0},
+                         1006: {exposure: 1}, 1038: {exposure: 0}, 1062: {exposure: 0}, 1202: {exposure: 0},
+                         1225: {exposure: 0}, 1347: {exposure: 0}, 1348: {exposure: 0}, 1423: {exposure: 0},
+                         1424: {exposure: 0}, 1679: {exposure: 1}, 1755: {exposure: 0}, 1957: {exposure: 0}}
+            else:
+                raise ValueError("Invalid N for the network")
         elif exposure == 'naloxone':
-            attrs = {3: {exposure: 0}, 93: {exposure: 0}, 98: {exposure: 0}, 153: {exposure: 1}, 201: {exposure: 1},
-                     202: {exposure: 1}, 203: {exposure: 0}, 350: {exposure: 1}, 353: {exposure: 0}, 358: {exposure: 1}}
+            if n == 500:
+                attrs = {3: {exposure: 0}, 121: {exposure: 1}, 140: {exposure: 0}, 149: {exposure: 1}, 196: {exposure: 1},
+                         247: {exposure: 0}, 279: {exposure: 1}, 381: {exposure: 1}, 390: {exposure: 0}, 391: {exposure: 1}, }
+            elif n == 1000:
+                attrs = {1: {exposure: 0}, 72: {exposure: 0}, 311: {exposure: 0}, 327: {exposure: 0}, 331: {exposure: 0},
+                         334: {exposure: 0}, 517: {exposure: 1}, 613: {exposure: 1}, 618: {exposure: 1}, 658: {exposure: 0},
+                         783: {exposure: 0}, 816: {exposure: 1}, 820: {exposure: 0}, 910: {exposure: 0}, 960: {exposure: 0}, }
+            elif n == 2000:
+                attrs = {1: {exposure: 0}, 118: {exposure: 1}, 306: {exposure: 1}, 321: {exposure: 0},
+                         410: {exposure: 0}, 411: {exposure: 0}, 450: {exposure: 0}, 530: {exposure: 0},
+                         567: {exposure: 0}, 571: {exposure: 1}, 602: {exposure: 0}, 606: {exposure: 0},
+                         641: {exposure: 1}, 661: {exposure: 0}, 681: {exposure: 1}, 690: {exposure: 0},
+                         691: {exposure: 0}, 729: {exposure: 1}, 821: {exposure: 0}, 836: {exposure: 0},
+                         858: {exposure: 0}, 901: {exposure: 0}, 939: {exposure: 0}, 973: {exposure: 0},
+                         1006: {exposure: 0}, 1038: {exposure: 1}, 1062: {exposure: 0}, 1202: {exposure: 1},
+                         1225: {exposure: 1}, 1347: {exposure: 1}, 1348: {exposure: 0}, 1423: {exposure: 0},
+                         1424: {exposure: 0}, 1679: {exposure: 0}, 1755: {exposure: 0}, 1957: {exposure: 0}}
+            else:
+                raise ValueError("Invalid N for the network")
         elif exposure == 'diet':
-            attrs = {3: {exposure: 0}, 93: {exposure: 0}, 98: {exposure: 0}, 153: {exposure: 0}, 201: {exposure: 1},
-                     202: {exposure: 0}, 203: {exposure: 0}, 350: {exposure: 1}, 353: {exposure: 0}, 358: {exposure: 0}}
+            if n == 500:
+                attrs = {3: {exposure: 0}, 121: {exposure: 1}, 140: {exposure: 0}, 149: {exposure: 1}, 196: {exposure: 1},
+                         247: {exposure: 0}, 279: {exposure: 0}, 381: {exposure: 1}, 390: {exposure: 1}, 391: {exposure: 0}, }
+            elif n == 1000:
+                attrs = {1: {exposure: 1}, 72: {exposure: 0}, 311: {exposure: 0}, 327: {exposure: 1}, 331: {exposure: 1},
+                         334: {exposure: 1}, 517: {exposure: 0}, 613: {exposure: 1}, 618: {exposure: 0}, 658: {exposure: 0},
+                         783: {exposure: 1}, 816: {exposure: 1}, 820: {exposure: 1}, 910: {exposure: 1}, 960: {exposure: 0}, }
+            elif n == 2000:
+                attrs = {1: {exposure: 0}, 118: {exposure: 0}, 306: {exposure: 0}, 321: {exposure: 0},
+                         410: {exposure: 0}, 411: {exposure: 0}, 450: {exposure: 1}, 530: {exposure: 1},
+                         567: {exposure: 1}, 571: {exposure: 1}, 602: {exposure: 1}, 606: {exposure: 0},
+                         641: {exposure: 0}, 661: {exposure: 0}, 681: {exposure: 1}, 690: {exposure: 1},
+                         691: {exposure: 1}, 729: {exposure: 0}, 821: {exposure: 1}, 836: {exposure: 1},
+                         858: {exposure: 1}, 901: {exposure: 0}, 939: {exposure: 1}, 973: {exposure: 0},
+                         1006: {exposure: 1}, 1038: {exposure: 0}, 1062: {exposure: 1}, 1202: {exposure: 0},
+                         1225: {exposure: 0}, 1347: {exposure: 0}, 1348: {exposure: 1}, 1423: {exposure: 1},
+                         1424: {exposure: 1}, 1679: {exposure: 0}, 1755: {exposure: 0}, 1957: {exposure: 1}}
+            else:
+                raise ValueError("Invalid N for the network")
         elif exposure == 'vaccine':
-            attrs = {3: {exposure: 0}, 93: {exposure: 0}, 98: {exposure: 0}, 153: {exposure: 1}, 201: {exposure: 1},
-                     202: {exposure: 1}, 203: {exposure: 0}, 350: {exposure: 1}, 353: {exposure: 0}, 358: {exposure: 1}}
+            if n == 500:
+                attrs = {3: {exposure: 1}, 121: {exposure: 1}, 140: {exposure: 0}, 149: {exposure: 0}, 196: {exposure: 1},
+                         247: {exposure: 1}, 279: {exposure: 0}, 381: {exposure: 1}, 390: {exposure: 0}, 391: {exposure: 0}, }
+            elif n == 1000:
+                attrs = {1: {exposure: 0}, 72: {exposure: 1}, 311: {exposure: 1}, 327: {exposure: 0}, 331: {exposure: 0},
+                         334: {exposure: 0}, 517: {exposure: 1}, 613: {exposure: 0}, 618: {exposure: 0}, 658: {exposure: 0},
+                         783: {exposure: 1}, 816: {exposure: 0}, 820: {exposure: 1}, 910: {exposure: 1}, 960: {exposure: 0}, }
+            elif n == 2000:
+                attrs = {1: {exposure: 1}, 118: {exposure: 1}, 306: {exposure: 0}, 321: {exposure: 1},
+                         410: {exposure: 0}, 411: {exposure: 0}, 450: {exposure: 0}, 530: {exposure: 0},
+                         567: {exposure: 0}, 571: {exposure: 0}, 602: {exposure: 0}, 606: {exposure: 0},
+                         641: {exposure: 0}, 661: {exposure: 0}, 681: {exposure: 0}, 690: {exposure: 1},
+                         691: {exposure: 1}, 729: {exposure: 0}, 821: {exposure: 0}, 836: {exposure: 1},
+                         858: {exposure: 0}, 901: {exposure: 0}, 939: {exposure: 1}, 973: {exposure: 1},
+                         1006: {exposure: 1}, 1038: {exposure: 0}, 1062: {exposure: 0}, 1202: {exposure: 0},
+                         1225: {exposure: 0}, 1347: {exposure: 0}, 1348: {exposure: 0}, 1423: {exposure: 0},
+                         1424: {exposure: 0}, 1679: {exposure: 0}, 1755: {exposure: 1}, 1957: {exposure: 0}}
+            else:
+                raise ValueError("Invalid N for the network")
         else:
             raise ValueError("Invalid exposure argument")
-
     else:
         raise ValueError("Invalid network label")
     return attrs
