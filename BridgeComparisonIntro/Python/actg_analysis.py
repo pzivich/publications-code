@@ -2,7 +2,7 @@
 # ACTG 320 - ACTG 175 Fusion: main analysis
 #       This script runs the procedure for the estimation of the risk difference
 #
-# Paul Zivich (2022/6/11)
+# Paul Zivich (2022/6/13)
 ####################################################################################################################
 
 import numpy as np
@@ -31,8 +31,6 @@ if __name__ == "__main__":
     afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
                           censor_shift=1e-4, bound=None, stratify_by_sample=True, strata='art')
     r = afipw.estimate()
-    print(r[['RD', 'R2_S1', 'R1_S1', 'R1_S0', 'R0_S0']])
-    print((r['R2_S1']-r['R1_S1']) + (r['R1_S0']-r['R0_S0']))
 
     print("\nRisk difference at t=365")
     print(np.round(r.iloc[-1, 1:5], 2), '\n')
