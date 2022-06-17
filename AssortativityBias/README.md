@@ -1,4 +1,4 @@
-# Assortativity can lead to bias in epidemiologic studies of contagious outcomes: a simulated example in the context of vaccination
+# Assortativity and Bias in Epidemiologic Studies of Contagious Outcomes: A Simulated Example in the Context of Vaccination
 
 ### Paul N Zivich, Alexander Volfovsky, James Moody, Allison E Aiello
 

@@ -12,8 +12,9 @@ the corresponding `README.md` file for each publication.
 -------------------------------------
 
 ### AssortativityBias
-Zivich PN, Volfovsky A, Moody J, Aiello AE. "Assortativity can lead to bias in epidemiologic studies of contagious 
-outcomes: a simulated example in the context of vaccination". Forthcoming. 2021
+Zivich PN, Volfovsky A, Moody J, Aiello AE. "Assortativity and Bias in Epidemiologic Studies of Contagious 
+Outcomes: A Simulated Example in the Context of Vaccination". *American Journal of Epidemiology*. 
+2021;190(11):2442-2452.
 
 ### BridgeComparisonIntro
 Zivich PN, Cole SR, Edwards JK, Shook-Sa BE, Breskin A, and Hudgens MG. "Bridged treatment comparisons: an illustrative
