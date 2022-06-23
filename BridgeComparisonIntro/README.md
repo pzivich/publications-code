@@ -36,8 +36,11 @@ versions of dependencies. `actg_diagnostic.py` runs the associated diagnostics a
 ### R
 The `R/` path includes the bridged inverse probability weighting estimator in the `Chimera.R` file that can be loaded.
 Additionally, there are two files to recreate the analyses presented in the paper: `actg_diagnostic.R`, and
-`actg_analysis.R`. `actg_diagnostic.py` runs the associated diagnostics and generates the plots that make up Figure 1.
-`actg_analysis.py` conducts the analysis on the CD4 restricted data and re-creates Figure 2.
+`actg_analysis.R`. `actg_diagnostic.R` runs the associated diagnostics and generates the plots that make up Figure 1.
+`actg_analysis.R` conducts the analysis on the CD4 restricted data and re-creates Figure 2.
 
 ### SAS
-To be added...
+The `SAS/` path includes a macro for the permutation test in the `permute_tools.sas` file that can be loaded.
+Additionally, there are two files to recreate the analyses presented in the paper: `actg_diagnostic.sas`, and
+`actg_analysis.sas`. `actg_diagnostic.sas` runs the associated diagnostics and generates the plots that make up
+Figure 1. `actg_analysis.sas` conducts the analysis on the CD4 restricted data and re-creates Figure 2.
