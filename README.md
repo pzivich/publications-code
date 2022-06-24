@@ -24,6 +24,10 @@ application in HIV treatment." *arXiv* arXiv:2206.04445.
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
 2021;32(3):393-401
 
+### MissingDataEpi
+Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
+Studies". *Under Review*
+
 ### ReBalancingIntercept
 Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisiting the balancing intercept'". 
 *American Journal of Epidemiology*. 2022 In-press.
