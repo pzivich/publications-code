@@ -26,7 +26,7 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 
 ### MissingDataEpi
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
-Studies". *Under Review*
+Studies". *American Journal of Epidemiology*. 2022 In-press
 
 ### ReBalancingIntercept
 Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisiting the balancing intercept'". 
@@ -38,6 +38,6 @@ Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *Amer
 
 ### networkTMLE
 Zivich PN, Hudgens MG, Brookhart MA, Moody J, Weber DJ, Aiello AE. "Targeted maximum likelihood estimation of causal
-effects with interference: a simulation study". *Under Review*. 2022
+effects with interference: a simulation study". *Statistics in Medicine*. 2022 In-press
 
 -------------------------------------
