@@ -19,4 +19,4 @@ print('Chimera:    ', ch.__version__)
 # Pandas:      1.1.5
 # Statsmodels: 0.12.2
 # Matplotlib:  3.3.4
-# Chimera:     0.0.3
+# Chimera:     0.0.4
