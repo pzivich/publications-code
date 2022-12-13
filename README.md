@@ -28,6 +28,10 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
 Studies". *American Journal of Epidemiology*. 2022 In-press
 
+### PooledTestingSARS2
+Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
+through differentiated pooling for distinct groups". *American Journal of Epidemiology* 2022 In-press.
+
 ### ReBalancingIntercept
 Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisiting the balancing intercept'". 
 *American Journal of Epidemiology*. 2022 In-press.
