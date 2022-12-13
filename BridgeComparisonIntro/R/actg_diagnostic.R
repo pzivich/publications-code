@@ -29,11 +29,12 @@ ans = survival.fusion.ipw(d,
                           sample_model=study ~ 1,
                           treatment_model=art ~ 1,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
-                              age + age_rs0 + age_rs1 + age_rs2 + 
+                              age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
                           diagnostic=T, 
                           permutation=T, 
                           permutation_n=10000, 
+                          bootstrap_n=1000,
                           verbose=F)
 
 # Adjusted model
@@ -48,11 +49,12 @@ ans = survival.fusion.ipw(d,
                               as.factor(karnof_cat),
                           treatment_model=art ~ 1,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
-                              age + age_rs0 + age_rs1 + age_rs2 + 
+                              age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
                           diagnostic=T, 
                           permutation=T,
                           permutation_n=10000,
+                          bootstrap_n=1000,
                           verbose=F)
 
 # Sampling model including CD4
@@ -67,12 +69,13 @@ ans = survival.fusion.ipw(d,
                               as.factor(karnof_cat) + cd4 + cd4_rs0 + cd4_rs1,
                           treatment_model=art ~ 1,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
-                              age + age_rs0 + age_rs1 + age_rs2 + 
+                              age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art) + cd4 + 
                               cd4_rs0 + cd4_rs1,
                           diagnostic=T,
                           permutation=T,
                           permutation_n=10000,
+                          bootstrap_n=1000,
                           verbose=F)
 
 # Restricted by CD4
@@ -87,17 +90,29 @@ ans = survival.fusion.ipw(dr,
                               as.factor(karnof_cat),
                           treatment_model=art ~ 1,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
-                              age + age_rs0 + age_rs1 + age_rs2 + 
+                              age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
                           diagnostic=T, 
                           permutation=T,
                           permutation_n=10000, 
+                          bootstrap_n=1000,
                           verbose=F)
 
+# Console Output
+#
 # ====================================================
 # Permutation Test
 # ====================================================
-# Observed area:  32.43
+# Observed area:  32.50
+# No. Permutations:  10000
+# ----------------------------------------------------
+# P-value:  0
+# ====================================================
+#
+# ====================================================
+# Permutation Test
+# ====================================================
+# Observed area:  30.05
 # No. Permutations:  10000
 # ----------------------------------------------------
 # P-value:  0
@@ -106,7 +121,7 @@ ans = survival.fusion.ipw(dr,
 # ====================================================
 # Permutation Test
 # ====================================================
-# Observed area:  29.99
+# Observed area:  36.3671117881398
 # No. Permutations:  10000
 # ----------------------------------------------------
 # P-value:  0
@@ -115,17 +130,8 @@ ans = survival.fusion.ipw(dr,
 # ====================================================
 # Permutation Test
 # ====================================================
-# Observed area:  36.33
+# Observed area:  9.51598461324015
 # No. Permutations:  10000
 # ----------------------------------------------------
-# P-value:  1e-04
-# ====================================================
-# 
-# ====================================================
-# Permutation Test
-# ====================================================
-# Observed area:  9.56
-# No. Permutations:  10000
-# ----------------------------------------------------
-# P-value:  0.0692
+# P-value:  0.0723
 # ====================================================

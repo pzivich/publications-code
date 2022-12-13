@@ -9,6 +9,7 @@ library(rlang)
 library(dplyr)
 library(survival)
 library(ggplot2)
+library(zoo)
 
 
 #' Bridging inverse probability weighting (IPW) estimator.
@@ -23,25 +24,171 @@ library(ggplot2)
 #'
 #' @param data Data set containing all the necessary variables
 #' @param treatment Column name for the treatment of interest
-#' @param sample Column name for location variable
+#' @param sample Column name for sample variable
 #' @param outcome Column name for the outcome variable
 #' @param censor Column name for the censoring variable
 #' @param time Column name for the time variable
-#' @param sample_model R formula for the sampling / location model
+#' @param sample_model R formula for the sampling / sample model
 #' @param treatment_model R formula for the treatment model
 #' @param censor_model R formula for the censoring model
 #' @param verbose Whether to display the nuisance model parameters (default is TRUE)
 #' @param diagnostic Whether to display the diagnostic twister plot (default is FALSE)
 #' @param permutation Whether to run the permutation test (default is FALSE)
 #' @param permutation_n Number of iterations to run for the permutation test
-#' @param censor_shift Value to shift censored observations by to break ties. Default is 1e-5
+#' @param bootstrap_n Number of iterations to run for the bootstrap variance
+#' @param censor_shift Value to shift censored observations by to break ties. Default is 1e-4
 #' @return data.frame of point estimates, variance, and 95% confidence intervals
 survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time, 
                                 sample_model, treatment_model, censor_model,
                                 verbose=TRUE, diagnostic=FALSE, permutation=FALSE,
-                                permutation_n=1000, censor_shift=1e-5){
+                                permutation_n=1000, bootstrap_n=1000,
+                                censor_shift=1e-4){
+    ### Computing point estimates ###
+    estimates = survival.bridge.point(data=data, 
+                                      treatment=treatment, 
+                                      outcome=outcome, 
+                                      time=time, 
+                                      sample=sample, 
+                                      sample_model=sample_model, 
+                                      treatment_model=treatment_model, 
+                                      censor_model=censor_model,
+                                      censor_shift=censor_shift, 
+                                      include_permute=permutation, 
+                                      verbose=verbose,
+                                      resample=F)
+    if (permutation){
+        point_est = estimates$est
+        obs_area = estimates$perm
+        perm_ind = estimates$ind_data
+    }
+    else {
+        point_est = estimates[[1]]
+    }
+    results = point_est
+
+    ### Computing variance estimates via bootstrap ###
+    var_ests = sapply(1:bootstrap_n, 
+                      survival.bridge.point, 
+                      data=data, 
+                      treatment=treatment, 
+                      outcome=outcome, 
+                      time=time, 
+                      sample=sample, 
+                      sample_model=sample_model, 
+                      treatment_model=treatment_model, 
+                      censor_model=censor_model,
+                      censor_shift=censor_shift, 
+                      include_permute=F, 
+                      verbose=F,
+                      resample=T)
+    
+    ### Variance Estimation ###
+    var_est = data.frame()
+    for (col in c("rd", "rd_diag")){
+        point_est$constant = 1                               # R is a pain to merge...
+        align_var = merge(point_est[, c("t", "constant")],   # so merging to get t's
+                          var_ests[[1]], by="t", all=T)      # for each variable
+        align_var = na.locf(align_var)
+        var_est_c = matrix(align_var[[col]])                   # Making into matrix
+        for (i in 2:bootstrap_n){                            # Appending rest to matrix
+            align_var = merge(point_est[, c("t", "constant")],   # so merging to get t's
+                              var_ests[[i]], by="t", all=T)      # for each variable
+            align_var = na.locf(align_var)
+            var_est_c = cbind(var_est_c, 
+                              matrix(align_var[[col]]))
+        }
+        results[, paste(col, ".se", sep="")] = apply(var_est_c, 1, var)^0.5
+    }
+    
+    # Calculating confidence intervals
+    results$rd_lcl = results$rd - 1.96*results$rd.se
+    results$rd_ucl = results$rd + 1.96*results$rd.se
+    results$rd_diag_lcl = results$rd_diag - 1.96*results$rd_diag.se
+    results$rd_diag_ucl = results$rd_diag + 1.96*results$rd_diag.se
+    
+    # Running the diagnostic procedures if requested
+    if (diagnostic){
+        # Creating plot with function from below
+        p = twister_plot(results,
+                         xvar=rd_diag,
+                         lcl=rd_diag_lcl, 
+                         ucl=rd_diag_ucl,
+                         yvar=t,
+                         xlab="Difference in Shared", 
+                         ylab="Time",
+                         reference_line=0.0)
+        # Displaying plot in console
+        print(p)
+    }
+    
+    # Permutation diagnostic procedure
+    if (permutation){
+        # Calculating the observed area between the step functions
+        observed_area = area_between_steps(x=obs_area$t, 
+                                           y0=obs_area$diag_p1, 
+                                           y1=obs_area$diag_p0)
+
+        # Estimating the area under permutations 
+        perm_areas = sapply(1:permutation_n, 
+                            permute_iteration, 
+                            data=perm_ind, 
+                            time=time, 
+                            sample=sample, 
+                            outcome=outcome, 
+                            treatment=treatment)
+        pvalue = mean(ifelse(perm_areas > observed_area, 1, 0))
+        
+        # Displaying permutation results        
+        message("====================================================")
+        message("Permutation Test")
+        message("====================================================")
+        message(paste("Observed area: ", toString(observed_area)))
+        message(paste("No. Permutations: ", toString(permutation_n)))
+        message("----------------------------------------------------")
+        message(paste("P-value: ", toString(pvalue)))
+        message("====================================================")
+    }
+    
+    # Returning the results
+    return(results)    
+}
+
+
+#' Bridging inverse probability weighting (IPW) point estimator.
+#'
+#' Note
+#' ----
+#'  This is an internal function called by the survival.fusion.ipw estimator 
+#'  for both the point estimates and variance estimates
+#'  
+#' @param data Data set containing all the necessary variables
+#' @param treatment Column name for the treatment of interest
+#' @param sample Column name for sample variable
+#' @param outcome Column name for the outcome variable
+#' @param censor Column name for the censoring variable
+#' @param time Column name for the time variable
+#' @param sample_model R formula for the sampling / sample model
+#' @param treatment_model R formula for the treatment model
+#' @param censor_model R formula for the censoring model
+#' @param verbose Whether to display the nuisance model parameters (default is TRUE)
+#' @param diagnostic Whether to display the diagnostic twister plot (default is FALSE)
+#' @param permutation Whether to run the permutation test (default is FALSE)
+#' @param permutation_n Number of iterations to run for the permutation test
+#' @param bootstrap_n Number of iterations to run for the bootstrap variance
+#' @param censor_shift Value to shift censored observations by to break ties. Default is 1e-4
+#' @return data.frame of point estimates, variance, and 95% confidence intervals
+survival.bridge.point <- function(data, treatment, outcome, time, sample, 
+                                  sample_model, treatment_model, censor_model,
+                                  censor_shift, include_permute, verbose,
+                                  resample, ...){
     ### Step 0: Data Prep ###
-    d = data %>% arrange(across(c(sample, treatment, time)))
+    if (resample){
+        dat = data[sample(nrow(data), replace=TRUE),]
+    }
+    else {
+        dat = data
+    }
+    d = dat %>% arrange(across(c(sample, treatment, time)))
     n_local = sum(d$study)                       # Number of observations in local
     d_distal = nrow(d) - n_local                 # Number of observations in distal
     unique_times = sort(c(0,                     # Extracting all unique event times
@@ -49,29 +196,31 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
                           max(d[, time])))
     # Breaking all censoring ties manually 
     d[, time] = d[, time] + ifelse(d$censor == 1, censor_shift, 0)
-    
+
     ### Step 1: Estimating Nuisance Models ###
     # Sampling model
-    d$pr_local = nuisance_location(data=d,
-                                   model=sample_model, 
-                                   verbose=verbose)
+    d$pr_local = nuisance_sample(data=d,
+                                 model=sample_model, 
+                                 verbose=verbose)
     # Treatment model
     d$pr_treat = nuisance_treatment(data=d,
                                     model=treatment_model, 
-                                    location=sample, 
+                                    sample=sample, 
                                     treatment=treatment, 
                                     verbose=verbose)
     # Censoring model
-    d$pr_ucens = c(nuisance_censor(data=d[d[, sample]==0, ],
-                                   model=censor_model, verbose=verbose),
-                   nuisance_censor(data=d[d[, sample]==1, ],
-                                   model=censor_model, verbose=verbose)
-    )
+    d$pr_ucens = nuisance_censor(data=d,
+                                 model=censor_model, 
+                                 verbose=verbose)
+    # d$pr_ucens = c(nuisance_censor(data=d[d[, sample]==0, ],
+    #                               model=censor_model, verbose=verbose),
+    #               nuisance_censor(data=d[d[, sample]==1, ],
+    #                               model=censor_model, verbose=verbose)
 
     # Splitting data by study
     ds0 = d[d[, sample]==0, ]
     ds1 = d[d[, sample]==1, ]
-
+    
     # Calculating intermediary variables needed for estimator
     fuse_weight = ifelse(d[, sample] == 1, 1, (1-d$pr_local) / (d$pr_local))
     baseline_weight = d$pr_treat * fuse_weight
@@ -80,9 +229,7 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
     
     # Storage of results
     psi = c()
-    psi_se = c()
     diag_psi = c()
-    diag_se = c()
     diag_p1 = c()
     diag_p0 = c()
     
@@ -103,8 +250,8 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
                      * d[, outcome])                      # Y
         pr_local_r1_i = numerator / (baseline_weight * timed_weight)
         pr_local_r1 = sum(pr_local_r1_i) / n_local
-
-                # Pr(Y^{a=1} | S=0)
+        
+        # Pr(Y^{a=1} | S=0)
         numerator = ((1 - d[, sample])                    # I(S=0)
                      * ifelse(d[, treatment] == 1, 1, 0)  # I(A=1)
                      * ifelse(d[, time] <= tau, 1, 0)     # I(T<=t)
@@ -122,96 +269,49 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
         
         # Estimation!
         psi_tau = (pr_local_r2 - pr_local_r1) + (pr_fusion_r1 - pr_fusion_r0)
-        var = sum(((pr_local_r2_i - pr_local_r1_i) + 
-                       (pr_fusion_r1_i - pr_fusion_r0_i)
-                   - psi_tau)**2)  / (n_local**2)
-        se_tau = sqrt(var)
         psi = c(psi, psi_tau)
-        psi_se = c(psi_se, se_tau)
-
+        
         # Estimation for Diagnostics
-        if (diagnostic){
-            diag_psi_tau = pr_local_r1 - pr_fusion_r1
-            diag_psi = c(diag_psi, diag_psi_tau)
-            diag_var = sum((pr_local_r1_i - pr_fusion_r1_i - 
-                                diag_psi_tau)**2) / n_local**2
-            diag_se = c(diag_se, sqrt(diag_var))
-        }
-        if (permutation){
-            diag_p1 = c(diag_p1, pr_local_r1)
-            diag_p0 = c(diag_p0, pr_fusion_r1)
-        }
+        diag_psi_tau = pr_local_r1 - pr_fusion_r1
+        diag_psi = c(diag_psi, diag_psi_tau)
+        diag_p1 = c(diag_p1, pr_local_r1)
+        diag_p0 = c(diag_p0, pr_fusion_r1)
     }
-
-    # Packing up results to send back to user
-    results = data.frame(t=unique_times,
-                         rd=psi, 
-                         rd_se=psi_se,
-                         rd_lcl = psi - 1.96*psi_se,
-                         rd_ucl = psi + 1.96*psi_se)
-    
-    # Running the diagnostic procedures if requested
-    if (diagnostic){
-        # Diagnostic twister plot
-        diagnose = data.frame(t=unique_times,
-                              rd=diag_psi,
-                              rd_lcl = diag_psi - 1.96*diag_se,
-                              rd_ucl = diag_psi + 1.96*diag_se)
-        # Creating plot with function from below
-        p = twister_plot(diagnose,
-                         xvar=rd,
-                         lcl=rd_lcl, ucl=rd_ucl,
-                         yvar=t,
-                         xlab="Difference in Shared", ylab="Time",
-                         reference_line=0.0)
-        # Displaying plot in console
-        print(p)
-    }
-    
-    # Permutation diagnostic procedure
-    if (permutation){
-        # Calculating the observed area between the step functions
-        observed_area = area_between_steps(x=unique_times, 
-                                           y0=diag_p1, 
-                                           y1=diag_p0)
-        # Data prep for permutation iterations
+    # Processing outputs
+    result = data.frame(t=unique_times,
+                        rd=psi,
+                        rd_diag=diag_psi)
+    if (include_permute){
+        # Point estimates for permutation area
+        permutes = data.frame(t=unique_times,
+                              diag_p1=diag_p1,
+                              diag_p0=diag_p0)
+        # Data frame with stored info for permutations
         pd = data.frame(d)                                     # Create copy
         pd$base_weight = 1 / baseline_weight                   # Saving weight
         pd$full_weight = 1 / (baseline_weight * timed_weight)  # Saving weight
         pd = pd %>% filter(pd[, treatment] == 1)               # Only treated
         
-        # Estimating the area under permutations 
-        perm_areas = sapply(1:permutation_n, 
-                            permute_iteration, 
-                            data=pd, time=time, 
-                            location=sample, outcome=outcome, 
-                            treatment=treatment)
-        pvalue = mean(ifelse(perm_areas > observed_area, 1, 0))
-        
-        # Displaying permutation results        
-        message("====================================================")
-        message("Permutation Test")
-        message("====================================================")
-        message(paste("Observed area: ", toString(observed_area)))
-        message(paste("No. Permutations: ", toString(permutation_n)))
-        message("----------------------------------------------------")
-        message(paste("P-value: ", toString(pvalue)))
-        message("====================================================")
+        all_results = list("est"=result, 
+                           "perm"=permutes,
+                           "ind_data"=pd)
+        return(all_results)
     }
-    
-    # Returning the results
-    return(results)    
+    else {
+        return(list(result))
+    }
 }
 
 
-#' Function used to estimate the nuisance model for sampling / location
+
+#' Function used to estimate the nuisance model for sampling / sample
 #' 
 #' @param data Data set containing all the necessary variables
 #' @param model R formula for the selection model
 #' @param verbose Whether to display the nuisance model parameters
-#' @return estimated probability for the specific location
-nuisance_location <- function(data, model, verbose){
-    # Location model: Pr(S|W)
+#' @return estimated probability for the specific sample
+nuisance_sample <- function(data, model, verbose){
+    # sample model: Pr(S|W)
     nuisance_sampling <- glm(model, 
                              data=data, 
                              family=binomial())
@@ -230,13 +330,13 @@ nuisance_location <- function(data, model, verbose){
 #' 
 #' @param data Data set containing all the necessary variables
 #' @param model R formula for the selection model
-#' @param location Column name for location variable
+#' @param sample Column name for sample variable
 #' @param treatment Column name for the treatment of interest
 #' @param verbose Whether to display the nuisance model parameters
 #' @return estimated probability for received treatment
-nuisance_treatment <- function(data, model, location, treatment, verbose){
-    ds0 = data %>% filter(data[, location]==0)
-    ds1 = data %>% filter(data[, location]==1)
+nuisance_treatment <- function(data, model, sample, treatment, verbose){
+    ds0 = data %>% filter(data[, sample]==0)
+    ds1 = data %>% filter(data[, sample]==1)
     ds1[,treatment] = ds1[,treatment] - 1
     
     # Assigned treatment: Pr(A=a,s)
@@ -422,10 +522,10 @@ area_between_steps = function(x, y0, y1, signed=FALSE){
 
 
 #' Function for a single iteration of the permutation procedure
-permute_iteration = function(x, data, time, location, outcome, treatment){
+permute_iteration = function(x, data, time, sample, outcome, treatment){
     # Permute the data set
     d = data.frame(data)
-    d[, location] = sample(data[,location])
+    d[, sample] = sample(data[,sample])
     
     # Setting up storage    
     distal_r1 = c()
@@ -435,21 +535,21 @@ permute_iteration = function(x, data, time, location, outcome, treatment){
     # Estimating the risk difference at each time
     for (tau in unique_t){
         # Pr(Y^{a=1} | S=0)
-        numerator = ((1 - d[, location])                 # I(W=d)
+        numerator = ((1 - d[, sample])                 # I(W=d)
                      * ifelse(d[, treatment] == 1, 1, 0)  # I(A=1)
                      * ifelse(d[, time] <= tau, 1, 0)    # I(T<=t)
                      * d[, outcome])                     # Y
         pr_fusion_r1_i = numerator * d$full_weight
-        pr_fusion_r1 = sum(pr_fusion_r1_i) / sum((1 - d[, location]) * d$base_weight)
+        pr_fusion_r1 = sum(pr_fusion_r1_i) / sum((1 - d[, sample]) * d$base_weight)
         distal_r1 = c(distal_r1, pr_fusion_r1)
         
         # Pr(Y^{a=1} | S=1)
-        numerator = (d[, location]                       # I(W=l)
+        numerator = (d[, sample]                       # I(W=l)
                      * ifelse(d[, treatment] == 1, 1, 0)  # I(A=1)
                      * ifelse(d[, time] <= tau, 1, 0)    # I(T<=t)
                      * d[, outcome])                     # Y
         pr_local_r1_i = numerator * d$full_weight
-        pr_local_r1 = sum(pr_local_r1_i) / sum(d[, location] * d$base_weight)
+        pr_local_r1 = sum(pr_local_r1_i) / sum(d[, sample] * d$base_weight)
         local_r1 = c(local_r1, pr_local_r1)
     }
     
