@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from chimera import SurvivalFusionIPW
 
 
-# __main__ call is not needed here (since no Pool) but putting regardless
 if __name__ == "__main__":
     ###############################
     # Loading Data and Setup
@@ -28,12 +27,15 @@ if __name__ == "__main__":
     afipw.sampling_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
                          bound=None)
     afipw.treatment_model(model="1", bound=None)
-    afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
-                          censor_shift=1e-4, bound=None, stratify_by_sample=True, strata='art')
-    r = afipw.estimate()
+    # afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
+    #                       censor_shift=1e-4, bound=None, stratify_by_sample=True, strata='art')
+    # r = afipw.estimate(variance="influence_curve")
+    afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat) + study",
+                          censor_shift=1e-4, bound=None, stratify_by_sample=False, strata='art')
+    r = afipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
 
     print("\nRisk difference at t=365")
-    print(np.round(r.iloc[-1, 1:5], 2), '\n')
+    print(np.round(r.iloc[-1, 1:5], 3), '\n')
 
     ###############################
     # Twister plot of main result
@@ -67,8 +69,8 @@ if __name__ == "__main__":
     ax2.spines['top'].set_visible(False)
 
     plt.tight_layout()
-    # plt.savefig("results/figure2_draft.png", format="png", dpi=300)
-    plt.show()
+    plt.savefig("figure2.png", format="png", dpi=300)
+    plt.close()
 
 # ==============================================================================
 # Sampling Model
@@ -79,8 +81,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            9
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -620.85
-# Date:                Sat, 11 Jun 2022   Deviance:                       1241.7
-# Time:                        09:10:06   Pearson chi2:                 1.04e+03
+# Date:                Tue, 13 Dec 2022   Deviance:                       1241.7
+# Time:                        13:43:38   Pearson chi2:                 1.04e+03
 # No. Iterations:                     4
 # Covariance Type:            nonrobust
 # ========================================================================================
@@ -107,8 +109,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            0
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -211.66
-# Date:                Sat, 11 Jun 2022   Deviance:                       423.32
-# Time:                        09:10:06   Pearson chi2:                     334.
+# Date:                Tue, 13 Dec 2022   Deviance:                       423.32
+# Time:                        13:43:38   Pearson chi2:                     334.
 # No. Iterations:                     4
 # Covariance Type:            nonrobust
 # ==============================================================================
@@ -126,8 +128,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            0
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -485.10
-# Date:                Sat, 11 Jun 2022   Deviance:                       970.20
-# Time:                        09:10:06   Pearson chi2:                     700.
+# Date:                Tue, 13 Dec 2022   Deviance:                       970.20
+# Time:                        13:43:38   Pearson chi2:                     700.
 # No. Iterations:                     3
 # Covariance Type:            nonrobust
 # ==============================================================================
@@ -138,58 +140,32 @@ if __name__ == "__main__":
 # ==============================================================================
 # ==============================================================================
 # Censoring Models
+#                                 Results: PHReg
+# ==============================================================================
+# Model:                       PH Reg           Num strata:                3
+# Dependent variable:          t                Min stratum size:          110
+# Ties:                        Breslow          Max stratum size:          568
+# Sample size:                 1031             Avg stratum size:          344.7
+# Num. events:                 663
 # ------------------------------------------------------------------------------
-# study=0
+#                       log HR log HR SE    HR      t    P>|t|   [0.025  0.975]
 # ------------------------------------------------------------------------------
-#                               Results: PHReg
-# ==========================================================================
-# Model:                       PH Reg         Num strata:              2
-# Dependent variable:          t              Min stratum size:        110
-# Ties:                        Breslow        Max stratum size:        224
-# Sample size:                 329            Avg stratum size:        167.0
-# Num. events:                 19
-# --------------------------------------------------------------------------
-#                       log HR log HR SE   HR      t    P>|t|  [0.025 0.975]
-# --------------------------------------------------------------------------
-# C(karnof_cat)[T.1.0] -0.1039    0.5061 0.9013 -0.2052 0.8374 0.3342 2.4306
-# C(karnof_cat)[T.2.0] -0.3703    1.0505 0.6905 -0.3525 0.7245 0.0881 5.4122
-# male                 -0.3895    0.5752 0.6774 -0.6771 0.4983 0.2194 2.0915
-# black                 0.7072    0.4986 2.0283  1.4182 0.1561 0.7633 5.3899
-# idu                  -0.0854    0.7767 0.9182 -0.1099 0.9125 0.2003 4.2081
-# age                  -0.0499    0.1028 0.9513 -0.4857 0.6272 0.7778 1.1636
-# age_rs0              -0.0028    0.0125 0.9972 -0.2256 0.8215 0.9731 1.0219
-# age_rs1               0.0125    0.0341 1.0125  0.3654 0.7148 0.9471 1.0825
-# age_rs2              -0.0096    0.0322 0.9905 -0.2972 0.7663 0.9299 1.0550
-# ==========================================================================
-# Confidence intervals are for the hazard ratios
-# ------------------------------------------------------------------------------
-# study=1
-# ------------------------------------------------------------------------------
-#                               Results: PHReg
-# ==========================================================================
-# Model:                       PH Reg         Num strata:              2
-# Dependent variable:          t              Min stratum size:        344
-# Ties:                        Breslow        Max stratum size:        356
-# Sample size:                 700            Avg stratum size:        350.0
-# Num. events:                 644
-# --------------------------------------------------------------------------
-#                       log HR log HR SE   HR      t    P>|t|  [0.025 0.975]
-# --------------------------------------------------------------------------
-# C(karnof_cat)[T.1.0] -0.1710    0.0856 0.8428 -1.9985 0.0457 0.7126 0.9967
-# C(karnof_cat)[T.2.0] -0.0954    0.1325 0.9090 -0.7201 0.4715 0.7011 1.1785
-# male                  0.0144    0.1055 1.0145  0.1368 0.8912 0.8251 1.2475
-# black                 0.2069    0.0940 1.2298  2.2006 0.0278 1.0229 1.4787
-# idu                  -0.0308    0.1087 0.9697 -0.2834 0.7769 0.7835 1.2000
-# age                   0.0044    0.0426 1.0044  0.1030 0.9180 0.9240 1.0918
-# age_rs0              -0.0006    0.0036 0.9994 -0.1695 0.8654 0.9924 1.0064
-# age_rs1               0.0009    0.0068 1.0009  0.1395 0.8891 0.9877 1.0144
-# age_rs2              -0.0016    0.0046 0.9984 -0.3516 0.7251 0.9894 1.0074
-# ==========================================================================
+# C(karnof_cat)[T.1.0] -0.1717    0.0842  0.8422 -2.0386 0.0415  0.7140   0.9934
+# C(karnof_cat)[T.2.0] -0.0947    0.1312  0.9097 -0.7216 0.4705  0.7035   1.1764
+# male                  0.0034    0.1035  1.0034  0.0326 0.9740  0.8192   1.2290
+# black                 0.2357    0.0919  1.2657  2.5638 0.0104  1.0571   1.5156
+# idu                  -0.0333    0.1076  0.9673 -0.3092 0.7571  0.7833   1.1944
+# age                  -0.0094    0.0388  0.9907 -0.2423 0.8086  0.9182   1.0688
+# age_rs0               0.0001    0.0033  1.0001  0.0257 0.9795  0.9936   1.0067
+# age_rs1               0.0003    0.0065  1.0003  0.0487 0.9611  0.9876   1.0131
+# age_rs2              -0.0016    0.0045  0.9984 -0.3490 0.7271  0.9897   1.0073
+# study                 4.1053    0.3023 60.6592 13.5818 0.0000 33.5437 109.6940
+# ==============================================================================
 # Confidence intervals are for the hazard ratios
 # ==============================================================================
 #
 # Risk difference at t=365
-# RD       -0.20
-# RD_SE     0.07
-# RD_LCL   -0.34
-# RD_UCL   -0.07
+# RD       -0.205
+# RD_SE     0.064
+# RD_LCL   -0.330
+# RD_UCL   -0.080
