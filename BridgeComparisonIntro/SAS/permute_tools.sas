@@ -69,6 +69,12 @@
 		VAR pvalue obs_area;
 		TITLE "Permutation Results (mean is the P-value)";
 	RUN;
+
+	/*Removing intermediate data sets*/
+	PROC DATASETS LIBRARY=WORK NOLIST;
+	    DELETE permn pres shuffled s_vals;
+	QUIT;
+	RUN;
 %MEND;
 
 
