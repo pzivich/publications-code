@@ -166,7 +166,6 @@ if __name__ == '__main__':
                            n_cpus=26, permutation_n=10000, seed=401425)
 
 # Unadjusted
-# Unadjusted
 # ======================================================================
 #        Fusion Inverse Probability Weighting Diagnostic Test
 # ======================================================================
