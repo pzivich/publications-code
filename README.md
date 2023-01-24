@@ -32,6 +32,10 @@ Studies". *American Journal of Epidemiology*. 2022 In-press
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
 through differentiated pooling for distinct groups". *American Journal of Epidemiology* 2022 In-press.
 
+### ProximalCI
+Zivich PN, Cole SR, Edwards JK, Mulholland GE, Shook-Sa BE, Tchetgen Tchetgen EJ. "Introducing Proximal Causal Inference
+for Epidemiologists". *American Journal of Epidemiology* 2023 In-press.
+
 ### ReBalancingIntercept
 Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisiting the balancing intercept'". 
 *American Journal of Epidemiology*. 2022 In-press.
