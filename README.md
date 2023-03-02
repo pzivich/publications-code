@@ -44,6 +44,10 @@ Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisit
 Cole SR, Zivich PN, Edwards JK, Shook-Sa BE, Hudgens MG. "Sensitivity Analyses for Means or Proportions with Missing
 Data". *Under Review* 2023.
 
+### TransportNoPositivity
+Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
+of statistical and simulation modeling". *Under Review* 2023.
+
 ### TwisterPlots
 Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
 2021;190(12): 2730-2731.
