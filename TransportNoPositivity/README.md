@@ -1,6 +1,5 @@
 # Transportability without positivity: a synthesis of statistical and simulation modeling
 
-Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J.
 ### Paul N Zivich, Jessie K Edwards, Eric T Lofgren, Stephen R Cole, Bonnie E Shook-Sa, Justin Lessler
 
 -----------------------------------
