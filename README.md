@@ -1,8 +1,7 @@
 # Publicly Available Code
 
 This repository is a collection of publicly available code from my past publications. This repository is for 
-storage and reference. Any code here that later becomes available in an open-source library, will be pointed to in
-the corresponding `README.md` file for each publication.
+storage and reference.
 
 -------------------------------------
 -------------------------------------
@@ -46,7 +45,7 @@ Data". *Under Review* 2023.
 
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
-of statistical and simulation modeling". *Under Review* 2023.
+of statistical and simulation modeling". *arXiv* arXiv:2303.01572.
 
 ### TwisterPlots
 Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
