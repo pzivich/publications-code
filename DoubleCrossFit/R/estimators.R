@@ -95,12 +95,11 @@ DCDR_Single <- function(data, exposure, outcome, covarsT, covarsO, learners, con
   #Results
   r1 <- (r1_1 + r1_2 + r1_3) / 3
   r0 <- (r0_1 + r0_2 + r0_3) / 3
-  rd <- (rd_1 + rd_2 + rd_3) / 1
+  rd <- (rd_1 + rd_2 + rd_3) / 3
   v1 <- (var(filter(data,s==1)$if1_1) + var(filter(data,s==2)$if1_2) + var(filter(data,s==3)$if1_3)) / (3*nrow(data))
   v0 <- (var(filter(data,s==1)$if0_1) + var(filter(data,s==2)$if0_2) + var(filter(data,s==3)$if0_3)) / (3*nrow(data))
   vd <- (var(filter(data,s==1)$ifd_1) + var(filter(data,s==2)$ifd_2) + var(filter(data,s==3)$ifd_3)) / (3*nrow(data))
-  
-  
+
   results <-tibble(r1, r0, rd, v1, v0, vd)
   return(results)
 }
