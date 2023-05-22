@@ -16,6 +16,9 @@ results service: a randomised, single-blind, controlled trial. *PLoS Medicine*, 
 
 ## File Manifesto
 
+`continuous.py`
+- Computes the example of non-positivity by a continuous variable as presented in the appendix.
+
 `dgm.py`
 - Data generating mechanisms for the simulation experiments.
 
@@ -26,7 +29,7 @@ results service: a randomised, single-blind, controlled trial. *PLoS Medicine*, 
 - Helper functions for simulations and the illustrative example.
 
 `process_results.py`
-- Takes the output file from `run_estimators.py` (the simulation experiments) and generates Appendix Table 1.
+- Takes the output file from `run_estimators.py` (the simulation experiments) and generates Appendix Tables 1 & 2.
 
 `process_wilson.py`
 - Takes the files from the supplement of Wilson et al. (2017) and sets it up for illustrative experiment.
