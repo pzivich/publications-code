@@ -23,6 +23,10 @@ application in HIV treatment." *arXiv* arXiv:2206.04445.
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
 2021;32(3):393-401
 
+### M-estimator_ICE
+Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
+expectation g-computation". *arXiv* arXiv:2303.01572.
+
 ### MissingDataEpi
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
 Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
@@ -41,7 +45,7 @@ Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisit
 
 ### RobinsSensitivityAnalysis
 Cole SR, Zivich PN, Edwards JK, Shook-Sa BE, Hudgens MG. "Sensitivity Analyses for Means or Proportions with Missing
-Data". *Under Review* 2023.
+Data". *Epidemiology* 2023.
 
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
