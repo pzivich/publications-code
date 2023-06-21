@@ -25,7 +25,7 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
-expectation g-computation". *arXiv* arXiv:2303.01572.
+expectation g-computation". *arXiv* arXiv:2306.10976
 
 ### MissingDataEpi
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
