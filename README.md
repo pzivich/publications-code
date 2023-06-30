@@ -1,14 +1,11 @@
 # Publicly Available Code
 
-This repository is a collection of publicly available code from my past publications. This repository is for 
-storage and reference.
+[![DOI](https://zenodo.org/badge/258263929.svg)](https://zenodo.org/badge/latestdoi/258263929)
 
--------------------------------------
--------------------------------------
+This repository is a collection of publicly available code from my past publications. This repository is for 
+long-term storage and future reference. In addition to GitHub, all code is stored on Zenodo.
 
 ## Manifesto
-
--------------------------------------
 
 ### AssortativityBias
 Zivich PN, Volfovsky A, Moody J, Aiello AE. "Assortativity and Bias in Epidemiologic Studies of Contagious 
