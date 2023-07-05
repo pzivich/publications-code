@@ -15,14 +15,17 @@ Outcomes: A Simulated Example in the Context of Vaccination". *American Journal 
 ### BridgeComparisonIntro
 Zivich PN, Cole SR, Edwards JK, Shook-Sa BE, Breskin A, and Hudgens MG. "Bridged treatment comparisons: an illustrative
 application in HIV treatment." *arXiv* arXiv:2206.04445.
+[![arXiv](https://img.shields.io/badge/arXiv-2206.04445-b31b1b.svg)](https://arxiv.org/abs/2206.04445)
 
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
-2021;32(3):393-401
+2021;32(3):393-401.
+[![arXiv](https://img.shields.io/badge/arXiv-2004.10337-b31b1b.svg)](https://arxiv.org/abs/2004.10337)
 
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
-expectation g-computation". *arXiv* arXiv:2306.10976
+expectation g-computation". *arXiv* arXiv:2306.10976.
+[![arXiv](https://img.shields.io/badge/arXiv-2306.10976-b31b1b.svg)](https://arxiv.org/abs/2306.10976)
 
 ### MissingDataEpi
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
@@ -47,6 +50,7 @@ Data". *Epidemiology* 2023.
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
 of statistical and simulation modeling". *arXiv* arXiv:2303.01572.
+[![arXiv](https://img.shields.io/badge/arXiv-2303.01572-b31b1b.svg)](https://arxiv.org/abs/2303.01572)
 
 ### TwisterPlots
 Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
