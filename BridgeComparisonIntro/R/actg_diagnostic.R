@@ -1,9 +1,9 @@
 ################################################################################
 # ACTG 320 - ACTG 175 Fusion: diagnostic results
 #       This script runs the proposed diagnostics using the ACTG example. 
-#       Graphical and permutation tests are both demonstrated.
+#       Graphical and diagnostic tests are both demonstrated.
 #
-# Paul Zivich (2022/6/11)
+# Paul Zivich (2023/8/22)
 ################################################################################
 
 library(dplyr)
@@ -31,9 +31,8 @@ ans = survival.fusion.ipw(d,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
                               age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
-                          diagnostic=T, 
-                          permutation=T, 
-                          permutation_n=10000, 
+                          diagnostic_plot=T, 
+                          diagnostic_test=T, 
                           bootstrap_n=1000,
                           verbose=F)
 
@@ -51,9 +50,8 @@ ans = survival.fusion.ipw(d,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
                               age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
-                          diagnostic=T, 
-                          permutation=T,
-                          permutation_n=10000,
+                          diagnostic_plot=T, 
+                          diagnostic_test=T, 
                           bootstrap_n=1000,
                           verbose=F)
 
@@ -72,9 +70,8 @@ ans = survival.fusion.ipw(d,
                               age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art) + cd4 + 
                               cd4_rs0 + cd4_rs1,
-                          diagnostic=T,
-                          permutation=T,
-                          permutation_n=10000,
+                          diagnostic_plot=T, 
+                          diagnostic_test=T, 
                           bootstrap_n=1000,
                           verbose=F)
 
@@ -92,46 +89,49 @@ ans = survival.fusion.ipw(dr,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
                               age + age_rs0 + age_rs1 + age_rs2 + study + 
                               as.factor(karnof_cat) + strata(art),
-                          diagnostic=T, 
-                          permutation=T,
-                          permutation_n=10000, 
+                          diagnostic_plot=T, 
+                          diagnostic_test=T, 
                           bootstrap_n=1000,
                           verbose=F)
 
 # Console Output
 #
 # ====================================================
-# Permutation Test
+# Diagnostic Test
 # ====================================================
-# Observed area:  32.50
-# No. Permutations:  10000
+# No. Bootstraps:  1000
 # ----------------------------------------------------
+# Area:     32.496
+# 95% CI:   24.174 40.818
 # P-value:  0
 # ====================================================
 #
 # ====================================================
-# Permutation Test
+# Diagnostic Test
 # ====================================================
-# Observed area:  30.05
-# No. Permutations:  10000
+# No. Bootstraps:  1000
 # ----------------------------------------------------
+# Area:     30.051
+# 95% CI:   20.572 39.529
 # P-value:  0
 # ====================================================
 # 
 # ====================================================
-# Permutation Test
+# Diagnostic Test
 # ====================================================
-# Observed area:  36.3671117881398
-# No. Permutations:  10000
+# No. Bootstraps:  1000
 # ----------------------------------------------------
+# Area:     36.367
+# 95% CI:   28.002 44.732
 # P-value:  0
 # ====================================================
 # 
 # ====================================================
-# Permutation Test
+# Diagnostic Test
 # ====================================================
-# Observed area:  9.51598461324015
-# No. Permutations:  10000
+# No. Bootstraps:  1000
 # ----------------------------------------------------
-# P-value:  0.0723
+# Area:     7.944
+# 95% CI:   -2.606 18.493
+# P-value:  0.14
 # ====================================================
