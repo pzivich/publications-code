@@ -56,21 +56,27 @@ def generate_data(n1, n0):
     return d
 
 
-def generate_background_info(marginal):
+def generate_background_info(marginal, n_secret, third_population=False):
     """Function to conduct the secret trial and return the estimated parameters.
 
     Parameters
     ----------
     marginal : bool
-        Whether to return \delta (marginal parameters, True) or \beta (conditional parameters, False)
+        Whether to return delta (marginal parameters, True) or beta (conditional parameters, False)
+    n_secret : int
+        Number of observations in the secret trial.
+    third_population : bool, optional
+        Whether the trial comes from a third population (different age distribution from both the trial and clinic).
 
     Returns
     -------
     list
     """
     # Generating secret study data
-    n_secret = 2000                                           # Number of observations in the secret trial
-    d = generate_clinic(n=n_secret)                           # Generating baseline covariate for secret clinic trial
+    if third_population:                                      # Population that the secret trial was conducted in
+        d = generate_third(n=n_secret)                        # ... generating baseline covariate for secret trial
+    else:
+        d = generate_clinic(n=n_secret)                       # ... generating baseline covariate for secret trial
     d['A'] = np.random.binomial(n=1, p=0.5, size=n_secret)    # Randomly assigning treatment in the secret trial
     d['AW'] = d['A']*d['W']                                   # Creating A-W interaction term
     ya1 = generate_potential_outcomes(data=d, a=1)            # Generating potential outcomes under a=1
@@ -147,6 +153,27 @@ def generate_trial(n):
     ya0 = generate_potential_outcomes(data=d, a=0)
     d['Y'] = np.where(d['A'] == 1, ya1, ya0)
     d['S'] = 0
+    return d
+
+
+def generate_third(n):
+    """Generates the baseline covariate distribution for a third population (used only for the secret trial for a
+    different age distribution population).
+
+    Parameters
+    ----------
+    n : int
+        Number of observations to generate
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    d = pd.DataFrame()
+    d['V'] = trapezoid(mini=18, mode1=29, mode2=30, maxi=30, size=n)
+    d['V'] = np.round(d['V'])
+    d['W'] = np.random.binomial(n=1, p=0.667, size=n)
+    d['S'] = 1
     return d
 
 
