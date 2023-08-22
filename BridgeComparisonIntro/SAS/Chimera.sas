@@ -3,7 +3,7 @@
 *       This script contains macros to make the bridge estimation less 'bulky' in the 
 *       corresponding actg_diagnostic.sas and actg_analysis files. 
 *
-* Paul Zivich (2022/12/14)
+* Paul Zivich (2023/08/22)
 * adapted from Steve Cole
 ***********************************************************************************/
 
@@ -259,7 +259,7 @@
 	RUN;
 %MEND;
 
-%MACRO diagnostic (data=, treatment=, outcome=, time=, sample=, censor=, sample_model=, censor_model=, class_vars=, bootstrap_n=200);
+%MACRO diagnostic_plot (data=, treatment=, outcome=, time=, sample=, censor=, sample_model=, censor_model=, class_vars=, bootstrap_n=200);
 	/*****************************************************
 	MACRO to compute the diagnostic estimates.
 		Runs the point estimation and bootstraps to 
@@ -393,6 +393,148 @@
 	RUN;
 %MEND;
 
+
+%MACRO diagnostic_test (data=, treatment=, outcome=, time=, sample=, censor=, sample_model=, censor_model=, class_vars=, bootstrap_n=200);
+
+	*Suppressing log output (to prevent it filling up);
+	OPTIONS NOSOURCE NONOTES;
+
+	/*Computing point estimates*/
+	%diagnostic_test_iter(data=&data, 
+                          treatment=&treatment, 
+                          outcome=&outcome, 
+                          time=&time,  
+                          sample=&sample, 
+                          censor=&censor, 
+                          sample_model=&sample_model, 
+                          censor_model=&censor_model, 
+                          class_vars=&class_vars)
+	RUN;
+  	DATA area_results;
+		SET area;
+	RUN;
+
+	/*Computing variance estimates*/
+	* Storage for bootstrap iterations;
+	DATA boot;
+		SET area;
+	RUN;
+
+	* Running bootstrap iterations;
+	%DO i = 1 %TO &bootstrap_n %BY 1;
+		/*Resampling with replacement*/
+		PROC SURVEYSELECT DATA=&data OUT=bdat 
+									 SEED=0
+                                     METHOD=URS
+                                     SAMPRATE=1
+                                     OUTHITS
+                                     rep=1 NOPRINT;        
+		RUN;
+
+		/*Calculating point estimate*/
+		%diagnostic_test_iter(data=bdat, 
+                      treatment=&treatment, 
+                      outcome=&outcome, 
+                      time=&time,  
+                      sample=&sample, 
+                      censor=&censor, 
+                      sample_model=&sample_model, 
+                      censor_model=&censor_model, 
+                      class_vars=&class_vars)
+		RUN;
+
+		PROC APPEND BASE=boot DATA=area;
+		RUN;
+	%END;
+
+	*Unsuppressing log output;
+	OPTIONS SOURCE NOTES;
+
+	/*Calculating variance estimates*/
+	PROC MEANS DATA=boot NOPRINT;
+		OUTPUT OUT=var STD=;
+	RUN;
+	DATA var;
+		SET var;
+		DROP _TYPE_ _FREQ_;
+	RUN;
+	DATA var;
+		SET var;
+		se = tarea;
+		KEEP se;
+	RUN;
+
+	/*Putting all the results together*/
+	DATA area_results;
+		MERGE area_results var;
+		lo = tarea - 1.96*se;   * Lower 95% confidence interval;
+		hi = tarea + 1.96*se;	
+		zscore = tarea / se;
+		pvalue = 2*(1-cdf("Normal", abs(zscore)));
+	RUN;
+
+	/*Displaying diagnostic test results*/
+	PROC PRINT DATA=area_results;
+	RUN;
+
+	/*Removing intermediate data sets*/
+	PROC DATASETS LIBRARY=WORK NOLIST;
+	    DELETE result boot boot_t bdat var fusion;
+	QUIT;
+	RUN;
+	
+%MEND;
+
+
+%MACRO diagnostic_test_iter (data=, treatment=, outcome=, time=, sample=, censor=, sample_model=, censor_model=, class_vars=);
+	/*****************************************************
+	MACRO to compute the diagnostic test.
+		Runs the point estimation and bootstraps to 
+		estimate the variance for the integrated risk
+		difference.
+
+	data:          input data
+
+	treatment:     treatment column name
+
+	outcome:       outcome indicator column name
+
+	time:          follow-up time column name
+
+	sample:        sample indicator name
+
+	censor:        indicator for loss-to-follow-up
+
+	sample_model:  model specification for sampling model
+
+	censor_model:  model specification for censoring model
+
+	class_vars:    variables to include in the CLASS 
+ 			       statement for the nuisance models
+
+	bootstrap_n:   number of resamples to use for the bootstrap
+	*****************************************************/	
+
+	/*Computing point estimates*/
+	%diagnostic_point(data=&data, 
+                      treatment=&treatment, 
+                      outcome=&outcome, 
+                      time=&time,  
+                      sample=&sample, 
+                      censor=&censor, 
+                      sample_model=&sample_model, 
+                      censor_model=&censor_model, 
+                      class_vars=&class_vars)
+	RUN;
+  	DATA results;
+		SET result;
+	RUN;
+
+	%area_calc(data=results);
+	RUN;
+%MEND;
+
+
 %MACRO diagnostic_point (data=, treatment=, outcome=, time=, sample=, censor=, sample_model=, censor_model=, class_vars=);
 	/*****************************************************
 	MACRO to compute the diagnostic point estimates.
@@ -510,5 +652,39 @@
 	PROC DATASETS LIBRARY=WORK NOLIST;
 	    DELETE fusion;
 	QUIT;
+	RUN;
+%MEND;
+
+%MACRO area_calc (data=);
+	/*****************************************************
+	MACRO to calculate the area between risk functions
+		Runs the calculation of the area and returns the 
+		total area result in the area data set.
+		Steps here refer to the algorithm in the Appendix 
+		of the paper.
+
+	data:          input data consisting of risks and time
+	*****************************************************/	
+	DATA area;
+		SET &data END=eof;
+		/*Step 2: time difference*/
+		%IF eof = 1 %THEN %DO; * IF ELSE statement mimics a LEAD() function;
+			tdiff = 0;
+	  		%END;
+		%ELSE %DO; 
+			pt = _N_ + 1;
+	  		SET &data (KEEP=time RENAME=(time=next_t)) POINT=pt;
+	  		tdiff = next_t - time;
+			%END;
+
+		/*Step 3: calculate area*/
+		area = shared*tdiff;
+
+		/*Step 4: cumulative sum*/
+		tarea + area;
+
+		/*Keep only total area as output*/
+		IF eof = 1 THEN output;
+		KEEP tarea;
 	RUN;
 %MEND;

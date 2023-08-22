@@ -2,7 +2,7 @@
 * ACTG 320 - ACTG 175 Fusion: main analysis
 *       This script runs the procedure for the estimation of the risk difference
 *
-* Paul Zivich (2022/6/23)
+* Paul Zivich (2023/08/22)
 * adapted from Steve Cole
 ***********************************************************************************/
 
