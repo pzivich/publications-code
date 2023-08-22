@@ -369,7 +369,7 @@ class SurvivalFusionIPW:
 
             # Using pool to multiprocess the bootstrapping procedure
             with Pool(processes=n_cpus) as pool:
-                bsd = list(pool.map(_bootstrap_single_,                         # Call outside function to run parallel
+                bsd = list(pool.map(_bootstrap_point_single_,                   # Call outside function to run parallel
                                     params))                                    # provide packed input list
 
             # Processing bootstrapped samples into variance estimates
@@ -434,77 +434,77 @@ class SurvivalFusionIPW:
         ax.set_ylabel("time")
         return ax
 
-    def permutation_test(self, permutation_n=1000, signed=False, decimal=3, plot_results=True, print_results=True,
-                         n_cpus=1, figsize=(7, 5), seed=None):
-        """Permutation test to diagnose the validity of the bridged comparison through the shared intermediate shared
-        arm between the trials.
+    def diagnostic_test(self, bs_iterations=200, decimal=3, print_results=True, n_cpus=1, seed=None):
+        """Diagnostic test based on the integrated risk difference of the shared intermediate arms between the trials.
 
         Parameters
         ----------
-        permutation_n : int, optional
-            Number of permutations to run. Default is to use 2000.
-        signed : bool, optional
-            Whether to calculate the geometric-area (all non-negative values) or the signed-area (all values).
+        bs_iterations : int, optional
+            Number of iterations to run the bootstrap for. Default is 200
         decimal: int, optional
             Number of decimal places to display in the printed output.
-        plot_results : bool, optional
-            Whether to present a histogram of the permutations and the observed area. Default is True
         print_results : bool, optional
             Whether to print the permutation results to the console. Default is True.
         n_cpus : int, optional
             Number of CPUs to pool together for the permutation test. Increasing the number of available CPUs should
             speed up the permutation procedure.
-        figsize : set, list, optional
-            Adjust the size of the diagnostic twister plot
         seed : None, int, optional
             Random seed.
+
+        Returns
+        -------
+        float
+            Corresponding Wald-type P-value
         """
         # Setting the seed
         rng = np.random.default_rng(seed)
 
         # Step 1: calculate area between steps
-        estimates = self.estimate()
-        obs_area = area_between_steps(data=estimates,
-                                      time='t', prob1='R1_S1', prob2='R1_S0',
-                                      signed=signed)
+        area_point = self._estimate_integrated_risk_difference_()
 
-        # Step 2: Area under permutations
-        d = self.df.copy()
-        d['_base_weights_'] = 1 / self._baseline_weight_
-        d['_full_weights_'] = 1 / (self._baseline_weight_ * self._timed_weight_)
+        # Step 2: bootstrap area between steps
+        ids_s1 = list(self.df.loc[self.df[self.sample] == 1].index)  # Get indices of units with S=1
+        ids_s0 = list(self.df.loc[self.df[self.sample] == 0].index)  # Get indices of units with S=0
+        params = [[self.df,
+                   # Getting random samples (w/ replace) of the S=1 and S=0 indices separately
+                   np.concatenate((rng.choice(ids_s1, size=len(ids_s1), replace=True),
+                                   rng.choice(ids_s0, size=len(ids_s0), replace=True))),
+                   # Extracting the model specifications from above
+                   self.treatment, self.outcome, self.time, self.sample, self.censor,
+                   self._sample_model_, self._sample_bound_,
+                   self._treat_model_, self._treat_bound_,
+                   self._censor_model_, self._censor_stratify_, self._censor_strata_, self._censor_bound_,
+                   self._censor_shift
+                   ] for i in range(bs_iterations)]  # iterations
 
-        # Restricting to intermediate (shared) trial arm only
-        d = d.loc[d[self.treatment] == 1].copy()
-
-        # Conducting permutations!
-        input_params = [[d,                                                       # data set to permute
-                         self.event_times, self.sample, self.time, self.outcome,  # dynamic columns to use
-                         signed,                                                  # whether to use the signed variation
-                         rng.permutation(d[self.sample])                          # shuffle the study indicators
-                         ] for i in range(permutation_n)]                         # and permutation number copies
+        # Using pool to multiprocess the bootstrapping procedure
         with Pool(processes=n_cpus) as pool:
-            permutation_area = list(pool.map(_permute_,       # Call _permute function from outside to run in parallel
-                                             input_params))   # provide packed input list
+            bsd = list(pool.map(_bootstrap_area_single_,  # Call outside function to run parallel
+                                params))                  # ... provide packed input list
 
-        # Step 3: calculating P-value
-        p_value = np.mean(np.where(permutation_area > obs_area, 1, 0))
+        # Step 3: Processing bootstrapped samples into variance estimates
+        area_se = np.std(bsd, ddof=1)
+
+        # Step 4: Compute the various metrics
+        z_score = area_point / area_se
+        p_value = norm.sf(abs(z_score)) * 2
 
         if print_results:
+            zalpha = norm.ppf(1 - self._alpha_ / 2, loc=0, scale=1)
+            lcl = area_point - zalpha*area_se
+            ucl = area_point + zalpha*area_se
             print('======================================================================')
             print('       Fusion Inverse Probability Weighting Diagnostic Test           ')
             print('======================================================================')
-            fmt = 'Observed area:    {:<15} No. Permutations:     {:<20}'
-            print(fmt.format(np.round(obs_area, decimal), permutation_n))
+            fmt = 'No. Bootstraps:     {:<20}'
+            print(fmt.format(bs_iterations))
             print('----------------------------------------------------------------------')
-            print("P-value:", np.round(p_value, 3))
+            print("Area:   ", np.round(area_point, decimal))
+            print("95% CI: ", np.round([lcl, ucl], decimal))
+            print("P-value:", np.round(p_value, decimal))
             print('======================================================================')
-        if plot_results:
-            fig, ax = plt.subplots(figsize=figsize)                          # fig_size is width by height
-            ax.hist(permutation_area, bins=50, color="gray", density=True)
-            ax.axvline(x=obs_area, color="red")
-            return ax
-        else:
-            return p_value
+
+        return p_value
 
     def plot(self, figsize=(5, 7)):
         """Generates a twister plot of the risk difference estimates.
@@ -551,11 +551,16 @@ class SurvivalFusionIPW:
         # Return estimates (possibly with variance estimates
         return results
 
+    def _estimate_integrated_risk_difference_(self, ):
+        # Integrated difference between risk of the shared arms
+        estimates = self.estimate()
+        area = area_between_steps(data=estimates,
+                                  time='t', prob1='R1_S1', prob2='R1_S0',
+                                  signed=True)
+        return area
 
-def _bootstrap_single_(params):
-    """
 
-    """
+def _bootstrap_point_single_(params):
     # Unpacking input parameters
     (data, sample_index,
      treatment, outcome, time, sample, censor,
@@ -581,42 +586,33 @@ def _bootstrap_single_(params):
     return x[["t", "RD", "RR", "R1D", "R2_S1", "R1_S1", "R1_S0", "R0_S0"]].set_index("t")
 
 
-def _permute_(params):
-    """self-contained function to permute the data. This function is called by the multiprocessing (so we
-    can run in parallel for quicker speed). Speed depends on the number of CPUs given
+def _bootstrap_area_single_(params):
     """
-    # Unpack the parameters
-    d, times, local_col, time_col, y_col, signed, shuffled = params
 
-    # Step 2a: permute the study indicator labels
-    dc = d.copy()
-    dc[local_col] = shuffled
+    """
+    # Unpacking input parameters
+    (data, sample_index,
+     treatment, outcome, time, sample, censor,
+     sampling_model, sample_pr_bound,
+     treatment_model, treat_pr_bound,
+     censoring_model, censor_stratify, censor_strata, censor_pr_bound, censor_shift) = params
 
-    # Calculating new N's based on the baseline weights (IPTW & IOSW)
-    n_local = np.sum(dc[local_col] * dc['_base_weights_'])
-    n_distal = np.sum((1 - dc[local_col]) * dc['_base_weights_'])
-
-    # Step 2b: weighted empirical distribution function stratified by study
-    distal_r1 = []
-    local_r1 = []
-    for tau in times:
-        r_local, r_distal = _estimate_diagnostic_functions_at_t_(current_time=tau,
-                                                                 data=dc, location=local_col, delta=y_col,
-                                                                 time_variable=time_col,
-                                                                 full_weight=dc['_full_weights_'],
-                                                                 n_local=n_local, n_distal=n_distal)
-        local_r1.append(r_local)
-        distal_r1.append(r_distal)
-
-    edf_curve = pd.DataFrame({"t": times,
-                              "pR_p1": distal_r1,
-                              "pR_p0": local_r1})
-
-    # Step 2c: calculate area under permuted curves
-    area = area_between_steps(data=edf_curve,
-                              time=time_col, prob1='pR_p1', prob2='pR_p0',
-                              signed=signed)
-    return area
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)  # Hides excessive censor=None warns
+        # Create a fresh class with the resampled data
+        estr = SurvivalFusionIPW(df=data.iloc[sample_index].copy(),
+                                 treatment=treatment, outcome=outcome, time=time,
+                                 sample=sample, censor=censor, verbose=False)
+        # Estimate the same sampling model with the same specifications
+        estr.sampling_model(sampling_model, bound=sample_pr_bound)
+        # Estimate the same treatment model with the same specifications
+        estr.treatment_model(treatment_model, bound=treat_pr_bound)
+        # Estimate the same censoring model with the same specifications
+        estr.censoring_model(censoring_model, stratify_by_sample=censor_stratify, strata=censor_strata,
+                             bound=censor_pr_bound, censor_shift=censor_shift)
+        # Estimate the point estimates for the sampled data
+        x = estr._estimate_integrated_risk_difference_()
+    return x
 
 
 def _estimate_risk_functions_at_t_(current_time, data, location, treatment, delta, time_variable,
