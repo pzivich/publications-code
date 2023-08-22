@@ -119,15 +119,7 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
                                            signed=T)
 
         # Estimating the area under resamples and re-estimates
-        # perm_areas = sapply(1:bootstrap_n, 
-        #                    permute_iteration, 
-        #                    data=perm_ind, 
-        #                    time=time, 
-        #                    sample=sample, 
-        #                    outcome=outcome, 
-        #                    treatment=treatment)
-        # pvalue = mean(ifelse(perm_areas > observed_area, 1, 0))
-        var_area_ests = sapply(1:bootstrap_n, 
+        var_area_ests = sapply(1:bootstrap_n,
                           diagnostic_test_iteration, 
                           data=data, 
                           treatment=treatment, 
@@ -144,7 +136,7 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
         zscore = observed_area / se_area
         area_lcl = observed_area - 1.96*se_area
         area_ucl = observed_area + 1.96*se_area
-        pvalue = pnorm(zscore, mean=0, sd=1, lower.tail=F)*2
+        pvalue = 2 * pnorm(abs(zscore), mean=0, sd=1, lower.tail=F)
         
         # Displaying diagnostic test based on the IRD results        
         message("====================================================")
