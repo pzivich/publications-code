@@ -3,7 +3,7 @@
 #       This script runs the proposed diagnostics using the ACTG example. Graphical and permutation tests are
 #       both demonstrated.
 #
-# Paul Zivich (2023/07/05)
+# Paul Zivich (2023/08/22)
 ####################################################################################################################
 
 import numpy as np

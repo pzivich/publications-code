@@ -1,3 +1,10 @@
+####################################################################################################################
+# ACTG 320 - ACTG 175 Fusion: main analysis
+#       Script to provide the current version of the libraries used
+#
+# Paul Zivich (2023/08/22)
+####################################################################################################################
+
 # Importing libraries used
 import numpy as np
 import scipy as sp
