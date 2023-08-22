@@ -2,7 +2,7 @@
 # ACTG 320 - ACTG 175 Fusion: main analysis
 #       This script runs the procedure for the estimation of the risk difference
 #
-# Paul Zivich (2022/6/11)
+# Paul Zivich (2023/8/22)
 ################################################################################
 
 library(dplyr)
@@ -29,8 +29,8 @@ ans = survival.fusion.ipw(dr,
                           censor_model=Surv(t, censor) ~ male + black + idu + 
                               age + age_rs0 + age_rs1 + age_rs2 + study +  
                               as.factor(karnof_cat) + strata(art),
-                          diagnostic=F, 
-                          permutation=F, 
+                          diagnostic_plot=F, 
+                          diagnostic_test=F, 
                           verbose=T,
                           bootstrap_n=1000)
 
@@ -160,6 +160,5 @@ twister_plot(ans,
 # 
 # =================================================================
 # 
-#      t         rd      rd.se      rd_lcl      rd_ucl
-# 73 365 -0.2048207 0.06532376  -0.3328553 -0.07678617
-# 
+#      t         rd       rd.se    rd_lcl      rd_ucl
+# 73 365 -0.2048207  0.06503534  -0.33229 -0.07735147

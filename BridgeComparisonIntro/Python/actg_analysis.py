@@ -2,7 +2,7 @@
 # ACTG 320 - ACTG 175 Fusion: main analysis
 #       This script runs the procedure for the estimation of the risk difference
 #
-# Paul Zivich (2022/6/13)
+# Paul Zivich (2023/08/22)
 ####################################################################################################################
 
 import numpy as np
@@ -27,12 +27,10 @@ if __name__ == "__main__":
     afipw.sampling_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
                          bound=None)
     afipw.treatment_model(model="1", bound=None)
-    # afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat)",
-    #                       censor_shift=1e-4, bound=None, stratify_by_sample=True, strata='art')
-    # r = afipw.estimate(variance="influence_curve")
     afipw.censoring_model("male + black + idu + age + age_rs0 + age_rs1 + age_rs2 + C(karnof_cat) + study",
                           censor_shift=1e-4, bound=None, stratify_by_sample=False, strata='art')
-    r = afipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
+    r = afipw.estimate(variance="bootstrap", bs_iterations=1000,
+                       n_cpus=28, seed=20230705)
 
     print("\nRisk difference at t=365")
     print(np.round(r.iloc[-1, 1:5], 3), '\n')
@@ -81,8 +79,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            9
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -620.85
-# Date:                Tue, 13 Dec 2022   Deviance:                       1241.7
-# Time:                        13:43:38   Pearson chi2:                 1.04e+03
+# Date:                Wed, 05 Jul 2023   Deviance:                       1241.7
+# Time:                        09:55:17   Pearson chi2:                 1.04e+03
 # No. Iterations:                     4
 # Covariance Type:            nonrobust
 # ========================================================================================
@@ -109,8 +107,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            0
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -211.66
-# Date:                Tue, 13 Dec 2022   Deviance:                       423.32
-# Time:                        13:43:38   Pearson chi2:                     334.
+# Date:                Wed, 05 Jul 2023   Deviance:                       423.32
+# Time:                        09:55:17   Pearson chi2:                     334.
 # No. Iterations:                     4
 # Covariance Type:            nonrobust
 # ==============================================================================
@@ -128,8 +126,8 @@ if __name__ == "__main__":
 # Model Family:                Binomial   Df Model:                            0
 # Link Function:                  logit   Scale:                          1.0000
 # Method:                          IRLS   Log-Likelihood:                -485.10
-# Date:                Tue, 13 Dec 2022   Deviance:                       970.20
-# Time:                        13:43:38   Pearson chi2:                     700.
+# Date:                Wed, 05 Jul 2023   Deviance:                       970.20
+# Time:                        09:55:17   Pearson chi2:                     700.
 # No. Iterations:                     3
 # Covariance Type:            nonrobust
 # ==============================================================================
@@ -166,6 +164,6 @@ if __name__ == "__main__":
 #
 # Risk difference at t=365
 # RD       -0.205
-# RD_SE     0.064
-# RD_LCL   -0.330
-# RD_UCL   -0.080
+# RD_SE     0.063
+# RD_LCL   -0.328
+# RD_UCL   -0.082

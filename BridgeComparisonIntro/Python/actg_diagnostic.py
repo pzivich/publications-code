@@ -3,7 +3,7 @@
 #       This script runs the proposed diagnostics using the ACTG example. Graphical and permutation tests are
 #       both demonstrated.
 #
-# Paul Zivich (2022/6/9)
+# Paul Zivich (2023/08/22)
 ####################################################################################################################
 
 import numpy as np
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     ufipw.treatment_model(model="1", bound=False)
     ufipw.censoring_model(censoring, censor_shift=1e-4, bound=False,
                           strata='art', stratify_by_sample=False)
-    u_results = ufipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
+    u_results = ufipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28, seed=20230705)
 
     #################################
     # Adjusted Model
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     afipw.treatment_model(model="1", bound=False)
     afipw.censoring_model(censoring, censor_shift=1e-4, bound=False,
                           strata='art', stratify_by_sample=False)
-    a_results = afipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
+    a_results = afipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28, seed=20230704)
 
     #################################
     # Sampling model including CD4
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     wfipw.treatment_model(model="1", bound=False)
     wfipw.censoring_model(censoring_cd4, censor_shift=1e-4, bound=False,
                           strata='art', stratify_by_sample=False)
-    cd4_results = wfipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
+    cd4_results = wfipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28, seed=20230706)
 
     #################################
     # Restricting by CD4
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     rfipw.treatment_model(model="1", bound=False)
     rfipw.censoring_model(censoring, censor_shift=1e-4, bound=False,
                           strata='art', stratify_by_sample=False)
-    r_results = rfipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28)
+    r_results = rfipw.estimate(variance="bootstrap", bs_iterations=1000, n_cpus=28, seed=20230805)
 
     #################################
     # Plot Overall (.png)
@@ -145,32 +145,31 @@ if __name__ == '__main__':
     #################################
     # Calculating p-values!
 
-    # Unadjusted
+    # Unadjusted Model
     print("Unadjusted")
-    ufipw.permutation_test(plot_results=False, print_results=True, decimal=2,
-                           n_cpus=26, permutation_n=10000, seed=809415)
+    ufipw.diagnostic_test(bs_iterations=1000, print_results=True, n_cpus=28, seed=809415)
 
     # Adjusted
     print("\nAdjusted")
-    afipw.permutation_test(plot_results=False, print_results=True, decimal=2,
-                           n_cpus=26, permutation_n=10000, seed=209422)
+    afipw.diagnostic_test(bs_iterations=1000, print_results=True, n_cpus=28, seed=209422)
 
     # CD4-adjusted
     print("\nAdjusted + CD4")
-    wfipw.permutation_test(plot_results=False, print_results=True, decimal=2,
-                           n_cpus=26, permutation_n=10000, seed=919418)
+    wfipw.diagnostic_test(bs_iterations=1000, print_results=True, n_cpus=28, seed=919418)
 
     # Restricted by CD4
     print("\nAdjusted + restricted by CD4")
-    rfipw.permutation_test(plot_results=False, print_results=True, decimal=2,
-                           n_cpus=26, permutation_n=10000, seed=401425)
+    rfipw.diagnostic_test(bs_iterations=1000, print_results=True, n_cpus=28, seed=401425)
+
 
 # Unadjusted
 # ======================================================================
 #        Fusion Inverse Probability Weighting Diagnostic Test
 # ======================================================================
-# Observed area:    32.5            No. Permutations:     10000
+# No. Bootstraps:     1000
 # ----------------------------------------------------------------------
+# Area:    32.496
+# 95% CI:  [24.541 40.452]
 # P-value: 0.0
 # ======================================================================
 #
@@ -178,8 +177,10 @@ if __name__ == '__main__':
 # ======================================================================
 #        Fusion Inverse Probability Weighting Diagnostic Test
 # ======================================================================
-# Observed area:    30.05           No. Permutations:     10000
+# No. Bootstraps:     1000
 # ----------------------------------------------------------------------
+# Area:    30.051
+# 95% CI:  [20.841 39.26 ]
 # P-value: 0.0
 # ======================================================================
 #
@@ -187,8 +188,10 @@ if __name__ == '__main__':
 # ======================================================================
 #        Fusion Inverse Probability Weighting Diagnostic Test
 # ======================================================================
-# Observed area:    36.37           No. Permutations:     10000
+# No. Bootstraps:     1000
 # ----------------------------------------------------------------------
+# Area:    36.367
+# 95% CI:  [28.453 44.281]
 # P-value: 0.0
 # ======================================================================
 #
@@ -196,7 +199,9 @@ if __name__ == '__main__':
 # ======================================================================
 #        Fusion Inverse Probability Weighting Diagnostic Test
 # ======================================================================
-# Observed area:    9.52            No. Permutations:     10000
+# No. Bootstraps:     1000
 # ----------------------------------------------------------------------
-# P-value: 0.086
+# Area:    7.944
+# 95% CI:  [-2.843 18.73 ]
+# P-value: 0.149
 # ======================================================================

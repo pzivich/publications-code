@@ -19,9 +19,9 @@ from chimera import SurvivalFusionIPW
 # Dependencies and versions
 
 The analysis was completed with Python 3.6.5 and using
-NumPy:       1.19.5
-SciPy:       1.5.4
-Pandas:      1.1.5
-Statsmodels: 0.12.2
-Matplotlib:  3.3.4
-Chimera:     0.0.3
+- NumPy:       1.19.5
+- SciPy:       1.5.4
+- Pandas:      1.1.5
+- Statsmodels: 0.12.2
+- Matplotlib:  3.3.4
+- Chimera:     0.0.5

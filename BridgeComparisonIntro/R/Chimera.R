@@ -32,16 +32,15 @@ library(zoo)
 #' @param treatment_model R formula for the treatment model
 #' @param censor_model R formula for the censoring model
 #' @param verbose Whether to display the nuisance model parameters (default is TRUE)
-#' @param diagnostic Whether to display the diagnostic twister plot (default is FALSE)
-#' @param permutation Whether to run the permutation test (default is FALSE)
-#' @param permutation_n Number of iterations to run for the permutation test
+#' @param diagnostic_plot Whether to display the diagnostic twister plot (default is FALSE)
+#' @param diagnostic_test Whether to run the diagnostic test based on the integrated risk difference (IRD) (default is FALSE)
 #' @param bootstrap_n Number of iterations to run for the bootstrap variance
 #' @param censor_shift Value to shift censored observations by to break ties. Default is 1e-4
 #' @return data.frame of point estimates, variance, and 95% confidence intervals
 survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time, 
                                 sample_model, treatment_model, censor_model,
-                                verbose=TRUE, diagnostic=FALSE, permutation=FALSE,
-                                permutation_n=1000, bootstrap_n=1000,
+                                verbose=TRUE, diagnostic_plot=FALSE, 
+                                diagnostic_test=FALSE, bootstrap_n=1000,
                                 censor_shift=1e-4){
     ### Computing point estimates ###
     estimates = survival.bridge.point(data=data, 
@@ -53,17 +52,9 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
                                       treatment_model=treatment_model, 
                                       censor_model=censor_model,
                                       censor_shift=censor_shift, 
-                                      include_permute=permutation, 
                                       verbose=verbose,
                                       resample=F)
-    if (permutation){
-        point_est = estimates$est
-        obs_area = estimates$perm
-        perm_ind = estimates$ind_data
-    }
-    else {
-        point_est = estimates[[1]]
-    }
+    point_est = estimates[[1]]
     results = point_est
 
     ### Computing variance estimates via bootstrap ###
@@ -78,10 +69,9 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
                       treatment_model=treatment_model, 
                       censor_model=censor_model,
                       censor_shift=censor_shift, 
-                      include_permute=F, 
                       verbose=F,
                       resample=T)
-    
+
     ### Variance Estimation ###
     var_est = data.frame()
     for (col in c("rd", "rd_diag")){
@@ -89,8 +79,8 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
         align_var = merge(point_est[, c("t", "constant")],   # so merging to get t's
                           var_ests[[1]], by="t", all=T)      # for each variable
         align_var = na.locf(align_var)
-        var_est_c = matrix(align_var[[col]])                   # Making into matrix
-        for (i in 2:bootstrap_n){                            # Appending rest to matrix
+        var_est_c = matrix(align_var[[col]])                     # Making into matrix
+        for (i in 2:bootstrap_n){                                # Appending rest to matrix
             align_var = merge(point_est[, c("t", "constant")],   # so merging to get t's
                               var_ests[[i]], by="t", all=T)      # for each variable
             align_var = na.locf(align_var)
@@ -107,7 +97,7 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
     results$rd_diag_ucl = results$rd_diag + 1.96*results$rd_diag.se
     
     # Running the diagnostic procedures if requested
-    if (diagnostic){
+    if (diagnostic_plot){
         # Creating plot with function from below
         p = twister_plot(results,
                          xvar=rd_diag,
@@ -121,31 +111,51 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
         print(p)
     }
     
-    # Permutation diagnostic procedure
-    if (permutation){
+    # Diagnostic test procedure
+    if (diagnostic_test){
         # Calculating the observed area between the step functions
-        observed_area = area_between_steps(x=obs_area$t, 
-                                           y0=obs_area$diag_p1, 
-                                           y1=obs_area$diag_p0)
+        observed_area = area_between_steps(x=results$t, 
+                                           rd=results$rd_diag,
+                                           signed=T)
 
-        # Estimating the area under permutations 
-        perm_areas = sapply(1:permutation_n, 
-                            permute_iteration, 
-                            data=perm_ind, 
-                            time=time, 
-                            sample=sample, 
-                            outcome=outcome, 
-                            treatment=treatment)
-        pvalue = mean(ifelse(perm_areas > observed_area, 1, 0))
+        # Estimating the area under resamples and re-estimates
+        # perm_areas = sapply(1:bootstrap_n, 
+        #                    permute_iteration, 
+        #                    data=perm_ind, 
+        #                    time=time, 
+        #                    sample=sample, 
+        #                    outcome=outcome, 
+        #                    treatment=treatment)
+        # pvalue = mean(ifelse(perm_areas > observed_area, 1, 0))
+        var_area_ests = sapply(1:bootstrap_n, 
+                          diagnostic_test_iteration, 
+                          data=data, 
+                          treatment=treatment, 
+                          outcome=outcome, 
+                          time=time, 
+                          sample=sample, 
+                          sample_model=sample_model, 
+                          treatment_model=treatment_model, 
+                          censor_model=censor_model,
+                          censor_shift=censor_shift, 
+                          verbose=F,
+                          resample=T)
+        se_area = var(var_area_ests)^0.5
+        zscore = observed_area / se_area
+        area_lcl = observed_area - 1.96*se_area
+        area_ucl = observed_area + 1.96*se_area
+        pvalue = pnorm(zscore, mean=0, sd=1, lower.tail=F)*2
         
-        # Displaying permutation results        
+        # Displaying diagnostic test based on the IRD results        
         message("====================================================")
-        message("Permutation Test")
+        message("Diagnostic Test")
         message("====================================================")
-        message(paste("Observed area: ", toString(observed_area)))
-        message(paste("No. Permutations: ", toString(permutation_n)))
+        message(paste("No. Bootstraps: ", toString(bootstrap_n)))
         message("----------------------------------------------------")
-        message(paste("P-value: ", toString(pvalue)))
+        message(paste("Area:    ", toString(round(observed_area, 3))))
+        message(paste("95% CI:  ", toString(round(area_lcl, 3)), 
+                      toString(round(area_ucl, 3))))
+        message(paste("P-value: ", toString(round(pvalue, 3))))
         message("====================================================")
     }
     
@@ -172,15 +182,12 @@ survival.fusion.ipw <- function(data, treatment, sample, outcome, censor, time,
 #' @param censor_model R formula for the censoring model
 #' @param verbose Whether to display the nuisance model parameters (default is TRUE)
 #' @param diagnostic Whether to display the diagnostic twister plot (default is FALSE)
-#' @param permutation Whether to run the permutation test (default is FALSE)
-#' @param permutation_n Number of iterations to run for the permutation test
 #' @param bootstrap_n Number of iterations to run for the bootstrap variance
 #' @param censor_shift Value to shift censored observations by to break ties. Default is 1e-4
 #' @return data.frame of point estimates, variance, and 95% confidence intervals
 survival.bridge.point <- function(data, treatment, outcome, time, sample, 
                                   sample_model, treatment_model, censor_model,
-                                  censor_shift, include_permute, verbose,
-                                  resample, ...){
+                                  censor_shift, verbose, resample, ...){
     ### Step 0: Data Prep ###
     if (resample){
         dat = data[sample(nrow(data), replace=TRUE),]
@@ -281,25 +288,7 @@ survival.bridge.point <- function(data, treatment, outcome, time, sample,
     result = data.frame(t=unique_times,
                         rd=psi,
                         rd_diag=diag_psi)
-    if (include_permute){
-        # Point estimates for permutation area
-        permutes = data.frame(t=unique_times,
-                              diag_p1=diag_p1,
-                              diag_p0=diag_p0)
-        # Data frame with stored info for permutations
-        pd = data.frame(d)                                     # Create copy
-        pd$base_weight = 1 / baseline_weight                   # Saving weight
-        pd$full_weight = 1 / (baseline_weight * timed_weight)  # Saving weight
-        pd = pd %>% filter(pd[, treatment] == 1)               # Only treated
-        
-        all_results = list("est"=result, 
-                           "perm"=permutes,
-                           "ind_data"=pd)
-        return(all_results)
-    }
-    else {
-        return(list(result))
-    }
+    return(list(result))
 }
 
 
@@ -505,15 +494,15 @@ twister_plot <- function(dat,
 #' @param x X-values for the step functions
 #' @param y0 Y-values for the first step function at each unique X
 #' @param y1 Y-values for the second step function at each unique X
-area_between_steps = function(x, y0, y1, signed=FALSE){
+area_between_steps = function(x, rd, signed=TRUE){
     # Calculating difference is x-steps
     x_measures = lead(x) - x
-    # Calculating difference between y's
-    y_measures = y0 - y1
 
     # Optional logic for the signed difference
     if (!signed){
-        y_measures = abs(y_measures)
+      y_measures = abs(rd)
+    } else {
+      y_measures = rd
     }
     
     # Return the calculated area
@@ -521,40 +510,24 @@ area_between_steps = function(x, y0, y1, signed=FALSE){
 }
 
 
-#' Function for a single iteration of the permutation procedure
-permute_iteration = function(x, data, time, sample, outcome, treatment){
-    # Permute the data set
-    d = data.frame(data)
-    d[, sample] = sample(data[,sample])
-    
-    # Setting up storage    
-    distal_r1 = c()
-    local_r1 = c()
-    unique_t = sort(c(0, unique(d[d[, outcome]==1, time])))
-    
-    # Estimating the risk difference at each time
-    for (tau in unique_t){
-        # Pr(Y^{a=1} | S=0)
-        numerator = ((1 - d[, sample])                 # I(W=d)
-                     * ifelse(d[, treatment] == 1, 1, 0)  # I(A=1)
-                     * ifelse(d[, time] <= tau, 1, 0)    # I(T<=t)
-                     * d[, outcome])                     # Y
-        pr_fusion_r1_i = numerator * d$full_weight
-        pr_fusion_r1 = sum(pr_fusion_r1_i) / sum((1 - d[, sample]) * d$base_weight)
-        distal_r1 = c(distal_r1, pr_fusion_r1)
-        
-        # Pr(Y^{a=1} | S=1)
-        numerator = (d[, sample]                       # I(W=l)
-                     * ifelse(d[, treatment] == 1, 1, 0)  # I(A=1)
-                     * ifelse(d[, time] <= tau, 1, 0)    # I(T<=t)
-                     * d[, outcome])                     # Y
-        pr_local_r1_i = numerator * d$full_weight
-        pr_local_r1 = sum(pr_local_r1_i) / sum(d[, sample] * d$base_weight)
-        local_r1 = c(local_r1, pr_local_r1)
-    }
-    
-    val = area_between_steps(x=unique_t,
-                             y0=local_r1,
-                             y1=distal_r1)
-    return(val)
+#' Function for a single iteration of the diagnostic IRD procedure
+diagnostic_test_iteration = function(data, treatment, outcome, time, sample, 
+                                     sample_model, treatment_model, censor_model,
+                                     censor_shift, verbose, resample, ...){
+    estimates = survival.bridge.point(data=data, 
+                                      treatment=treatment, 
+                                      outcome=outcome, 
+                                      time=time, 
+                                      sample=sample, 
+                                      sample_model=sample_model, 
+                                      treatment_model=treatment_model, 
+                                      censor_model=censor_model,
+                                      censor_shift=censor_shift, 
+                                      verbose=F,
+                                      resample=T)
+    results = estimates[[1]]
+    area = area_between_steps(x=results$t, 
+                              rd=results$rd_diag,
+                              signed=T)
+    return(area)
 }

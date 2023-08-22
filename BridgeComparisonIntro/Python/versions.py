@@ -1,3 +1,10 @@
+####################################################################################################################
+# ACTG 320 - ACTG 175 Fusion: main analysis
+#       Script to provide the current version of the libraries used
+#
+# Paul Zivich (2023/08/22)
+####################################################################################################################
+
 # Importing libraries used
 import numpy as np
 import scipy as sp
@@ -19,4 +26,4 @@ print('Chimera:    ', ch.__version__)
 # Pandas:      1.1.5
 # Statsmodels: 0.12.2
 # Matplotlib:  3.3.4
-# Chimera:     0.0.4
+# Chimera:     0.0.5

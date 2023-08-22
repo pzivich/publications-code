@@ -1,3 +1,10 @@
+####################################################################################################################
+# ACTG 320 - ACTG 175 Fusion: main analysis
+#       This script provides some utility functions to simplify the simulation study script
+#
+# Paul Zivich (2023/08/22)
+####################################################################################################################
+
 import numpy as np
 import pandas as pd
 from scipy.stats import logistic
