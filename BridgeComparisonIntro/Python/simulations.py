@@ -5,6 +5,7 @@ from chimera import SurvivalFusionIPW
 from sim_utils import generate_dataset, generate_truth, generate_super_population, create_empty_csv
 
 # Simulation details
+n_sims = 2000
 n1 = 1000
 n0 = 1000
 np.random.seed(60610712 + n1)
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     create_empty_csv(n1=n1, n0=n0)
 
     # Running simulations
-    for i in range(1000):
+    for i in range(n_sims):
         # list storage of results to output to csv
         iter_results = []
 
@@ -42,8 +43,7 @@ if __name__ == "__main__":
             fipw.treatment_model(model="1", bound=None)
             fipw.censoring_model("", censor_shift=1e-1, bound=None, stratify_by_sample=False)
             ans = fipw.estimate(variance="bootstrap", bs_iterations=500, n_cpus=30)
-            pvalue = fipw.permutation_test(permutation_n=1000, n_cpus=30,
-                                           print_results=False, plot_results=False)
+            pvalue = fipw.diagnostic_test(bs_iterations=500, n_cpus=30, print_results=False)
 
             # Storing results for selected time points
             for day, tr in zip([91, 183, 274, 365], [truth_91, truth_183, truth_274, truth_365]):
