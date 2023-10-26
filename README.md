@@ -21,7 +21,7 @@ application in HIV treatment." *arXiv* arXiv:2206.04445.
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
 2021;32(3):393-401.
-[![arXiv](https://img.shields.io/badge/arXiv-2004.10337-b31b1b.svg)](https://arxiv.org/abs/2004.10337)
+[![arXiv](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
 
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
@@ -56,7 +56,7 @@ Data". *Epidemiology* 2023.
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
 of statistical and simulation modeling". *arXiv* arXiv:2303.01572.
-[![arXiv](https://img.shields.io/badge/arXiv-2303.01572-b31b1b.svg)](https://arxiv.org/abs/2303.01572)
+[![PubMed](https://img.shields.io/badge/PubMed-37757864-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/37757864/)
 
 ### TwisterPlots
 Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
