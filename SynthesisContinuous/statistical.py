@@ -76,7 +76,7 @@ class StatAIPW:
                                    return_type='dataframe')
         self._outcome_model_ = model
 
-    def estimate(self, init=None):
+    def estimate(self, init=None, solver='lm'):
         # Preparing data for the design matrix
         y = np.asarray(self.data[self.outcome])
         a = np.asarray(self.data[self.action])
@@ -97,7 +97,7 @@ class StatAIPW:
                                 Z=Z, W=W, X=X, Xa1=Xa1, Xa0=Xa0)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver='lm', maxiter=20000)
+        estr.estimate(solver=solver, maxiter=20000)
         ci = estr.confidence_intervals(alpha=0.05)
 
         # Storing results from the procedure
@@ -132,7 +132,7 @@ class StatMSM:
         self._MSM_ = patsy.dmatrix(model, self.data,
                                    return_type='dataframe')
 
-    def estimate(self, init=None):
+    def estimate(self, init=None, solver='lm'):
         # Preparing data for the design matrix
         y = np.asarray(self.data[self.outcome])
         MSM = np.asarray(self._MSM_)
@@ -146,7 +146,7 @@ class StatMSM:
             return ee_stat_msm(theta=theta, y=y, MSM=MSM)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver='lm', maxiter=20000)
+        estr.estimate(solver=solver, maxiter=20000)
 
         # Storing results from the procedure
         self.params = estr.theta
@@ -203,7 +203,7 @@ class StatCACE:
         self._CACE_ = patsy.dmatrix(model, self.data,
                                     return_type='dataframe')
 
-    def estimate(self, init=None):
+    def estimate(self, init=None, solver='lm'):
         # Preparing data for the design matrix
         y = np.asarray(self.data[self.outcome])
         X = np.asarray(self._X_)
@@ -220,7 +220,7 @@ class StatCACE:
             return ee_stat_cace(theta=theta, y=y, X=X, Xa1=Xa1, Xa0=Xa0, CACE=CACE)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver='lm', maxiter=20000)
+        estr.estimate(solver=solver, maxiter=20000)
 
         # Storing results from the procedure
         self.params = estr.theta

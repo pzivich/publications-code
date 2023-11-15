@@ -60,6 +60,8 @@ class SynthesisMSM:
         self.ace = None
         self.ace_var = None
         self.ace_ci = None
+        self.bounds = None
+        self.bounds_ci = None
 
         self._PS_ = None
         self._action_model_ = None
@@ -211,6 +213,8 @@ class SynthesisCACE:
         self.ace = None
         self.ace_var = None
         self.ace_ci = None
+        self.bounds = None
+        self.bounds_ci = None
 
         self._PS_ = None
         self._action_model_ = None
@@ -325,6 +329,44 @@ class SynthesisCACE:
 
         ydiff_s = ydiff[self.data[self.sample] == 1]
         return np.mean(ydiff_s)
+
+    def estimate_bounds(self, lower, upper, init=None, solver='lm'):
+        def psi_synth_cace(theta):
+            return ee_synth_aipw_cace(theta=theta, y=y, a=a, s=s, r=r,
+                                      Z=Z, W=W, X=X, Xa1=Xa1, Xa0=Xa0, CACE=CACE,
+                                      math_contribution=math_offset)
+
+        y = np.asarray(self.data[self.outcome])
+        a = np.asarray(self.data[self.action])
+        s = np.asarray(self.data[self.sample])
+        r = np.asarray(self.data[self.positive])
+        Z = np.asarray(self._PS_)
+        W = np.asarray(self._SW_)
+        X = np.asarray(self._X_)
+        Xa1 = np.asarray(self._Xa1_)
+        Xa0 = np.asarray(self._Xa0_)
+        CACE = np.asarray(self._CACE_)
+
+        # Calculating lower bound
+        math_offset = np.dot(self._MATH_, lower).flatten()
+        if init is None:
+            init = [100., ] + [0., ]*CACE.shape[1] + [0., ]*Z.shape[1] + [0., ]*W.shape[1] + [0., ]*X.shape[1]
+
+        estr = MEstimator(psi_synth_cace, init=init)
+        estr.estimate(solver=solver, maxiter=10000)
+        lbound = estr.theta[0]
+        lbound_ci = estr.confidence_intervals()[0, 0]
+
+        # Calculating upper bound
+        math_offset = np.dot(self._MATH_, upper).flatten()
+        estr = MEstimator(psi_synth_cace, init=init)
+        estr.estimate(solver=solver, maxiter=10000)
+        ubound = estr.theta[0]
+        ubound_ci = estr.confidence_intervals()[0, 1]
+
+        # Storing results
+        self.bounds = lbound, ubound
+        self.bounds_ci = lbound_ci, ubound_ci
 
 
 def _msm_resample_(params):
