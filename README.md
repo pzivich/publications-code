@@ -53,6 +53,11 @@ Cole SR, Zivich PN, Edwards JK, Shook-Sa BE, Hudgens MG. "Sensitivity Analyses f
 Data". *Epidemiology* 2023.
 [![PubMed](https://img.shields.io/badge/PubMed-37155639-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/37155639/)
 
+# SynthesisContinuous
+Zivich PN, Edwards JK, Shook-Sa BE, Lofgren ET, Lessler J, Cole SR. "Synthesis estimators for positivity violations
+with a continuous covariate" *arXiv* arXiv:2311.09388.
+[![arXiv](https://img.shields.io/badge/arXiv-2311.09388-b31b1b.svg)](https://arxiv.org/abs/2311.09388)
+
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
 of statistical and simulation modeling". *arXiv* arXiv:2303.01572.
