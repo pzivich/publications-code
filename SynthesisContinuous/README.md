@@ -1,10 +1,13 @@
 # Synthesis estimators for positivity violations with a continuous covariate
 
-### Paul N Zivich, Jessie K Edwards, Bonnie E Shook-Sa, Stephen R Cole, Eric T Lofgren, Justin Lessler
+### Paul N Zivich, Jessie K Edwards, Bonnie E Shook-Sa, Justin Lessler, Eric T Lofgren, Stephen R Cole
 
 -----------------------------------
 
 ## File Manifesto
+
+`application.py`
+- Illustrative ACTG 175 and WIHS example.
 
 `dgm.py`
 - Data generating mechanisms for the simulation experiments.
@@ -14,6 +17,9 @@
 
 `helper.py`
 - Helper functions for simulations.
+
+`process_data.py`
+- Process the public-use data files for ACTG 175 and WIHS.
 
 `run_simulations.py`
 - Runs the simulation experiment detailed in the appendix of the paper.
