@@ -14,5 +14,5 @@ shown in Table 1 of the letter.
 `balance_intercept.py`
 - Python code to numerically approximate the balancing intercepts.
 
-`balance_intercept.csv`
+`balance_intercept.R`
 - R code to numerically approximate the balancing intercepts.
