@@ -48,12 +48,15 @@ Zivich PN, Ross RK. "RE: 'Using numerical methods to design simulations: revisit
 *American Journal of Epidemiology*. 2022;191(10):1833-1834.
 [![PubMed](https://img.shields.io/badge/PubMed-35513352-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/35513352/)
 
+### ReBespokeIV
+Zivich PN. "RE: 'Estimating the Effect of a Treatment When There Is Nonadherence in a Trial'". *Submitted* 2023.
+
 ### RobinsSensitivityAnalysis
 Cole SR, Zivich PN, Edwards JK, Shook-Sa BE, Hudgens MG. "Sensitivity Analyses for Means or Proportions with Missing
 Data". *Epidemiology* 2023.
 [![PubMed](https://img.shields.io/badge/PubMed-37155639-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/37155639/)
 
-# SynthesisContinuous
+### SynthesisContinuous
 Zivich PN, Edwards JK, Shook-Sa BE, Lofgren ET, Lessler J, Cole SR. "Synthesis estimators for positivity violations
 with a continuous covariate" *arXiv* arXiv:2311.09388.
 [![arXiv](https://img.shields.io/badge/arXiv-2311.09388-b31b1b.svg)](https://arxiv.org/abs/2311.09388)
