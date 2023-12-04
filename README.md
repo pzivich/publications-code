@@ -23,6 +23,9 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 2021;32(3):393-401.
 [![arXiv](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
 
+### GCompMSM
+Zivich PN, Shook-Sa BE. "Practical Implementation of g-computation for marginal structural models" *Submitted* 2023.
+
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
 expectation g-computation". *arXiv* arXiv:2306.10976.
