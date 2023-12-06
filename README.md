@@ -36,6 +36,9 @@ Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "M
 Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
 [![PubMed](https://img.shields.io/badge/PubMed-36222655-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/36222655/)
 
+### NeuralNetworkPrimer
+Zivich PN, Naimi A. "A Primer on Neural Networks". *Submitted* 2023.
+
 ### PooledTestingSARS2
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
 through differentiated pooling for distinct groups". *American Journal of Epidemiology* 2023;192(2):246-256.
