@@ -8,12 +8,10 @@
 import patsy
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 from delicatessen import MEstimator
 from multiprocessing import Pool
 
-from efuncs import ee_synth_aipw_msm, ee_synth_aipw_cace
+from efuncs import ee_synth_aipw_msm, ee_synth_msm_only, ee_synth_aipw_cace, ee_synth_cace_only
 
 
 class SynthesisMSM:
@@ -41,19 +39,13 @@ class SynthesisMSM:
         self.positive = positive_region
 
         # Generating stacked data for the Snowden et al. trick
-        self.copy_ind = "__msm_copy__"
-        self.data[self.copy_ind] = 0
-        d = self.data.loc[self.data[self.sample] == 1].copy()
+        d = self.data.copy()
         self.data_a1 = d.copy()
         self.data_a1[self.action] = 1
         self.data_a1[self.outcome] = np.nan
-        self.data_a1[self.copy_ind] = 1
         self.data_a0 = d.copy()
         self.data_a0[self.action] = 0
         self.data_a0[self.outcome] = np.nan
-        self.data_a0[self.copy_ind] = 1
-        self.stack_data = pd.concat([self.data, self.data_a1, self.data_a0],
-                                    ignore_index=True)
 
         # Initialize storage for results
         self.estimates = None
@@ -71,65 +63,71 @@ class SynthesisMSM:
         self._Xa1_ = None
         self._Xa0_ = None
         self._outcome_model_ = None
-        self._MSM_ = None
+        self._MSM1_ = None
+        self._MSM0_ = None
         self._msm_model_ = None
-        self._MATH_ = None
         self._math_model_ = None
         self._math_param_ = None
 
     def action_model(self, model):
-        self._PS_ = patsy.dmatrix(model, self.stack_data,
+        self._PS_ = patsy.dmatrix(model, self.data,
                                   return_type='dataframe',
                                   NA_action=patsy.NAAction(NA_types=[]))
         self._action_model_ = model
 
     def sample_model(self, model):
-        self._SW_ = patsy.dmatrix(model, self.stack_data,
+        self._SW_ = patsy.dmatrix(model, self.data,
                                   return_type='dataframe',
                                   NA_action=patsy.NAAction(NA_types=[]))
         self._sample_model_ = model
 
     def outcome_model(self, model):
-        self._X_ = patsy.dmatrix(model, self.stack_data,
+        self._X_ = patsy.dmatrix(model, self.data,
                                  return_type='dataframe',
                                  NA_action=patsy.NAAction(NA_types=[]))
+        self._Xa1_ = patsy.dmatrix(model, self.data_a1,
+                                   return_type='dataframe',
+                                   NA_action=patsy.NAAction(NA_types=[]))
+        self._Xa0_ = patsy.dmatrix(model, self.data_a0,
+                                   return_type='dataframe',
+                                   NA_action=patsy.NAAction(NA_types=[]))
         self._outcome_model_ = model
 
     def marginal_structural_model(self, model):
-        self._MSM_ = patsy.dmatrix(model, self.stack_data,
-                                   return_type='dataframe',
-                                   NA_action=patsy.NAAction(NA_types=[]))
+        self._MSM1_ = patsy.dmatrix(model, self.data_a1,
+                                    return_type='dataframe',
+                                    NA_action=patsy.NAAction(NA_types=[]))
+        self._MSM0_ = patsy.dmatrix(model, self.data_a0,
+                                    return_type='dataframe',
+                                    NA_action=patsy.NAAction(NA_types=[]))
         self._msm_model_ = model
 
     def math_model(self, model, parameters):
-        self._MATH_ = patsy.dmatrix(model, self.stack_data,
-                                    return_type='dataframe',
-                                    NA_action=patsy.NAAction(NA_types=[]))
         self._math_model_ = model
         self._math_param_ = parameters
 
     def estimate(self, mc_iterations, n_cpus=1):
-        # Preparing data for estimation procedure
-        params = []
+        # Estimating statistical model parameters
+        msm_np = self._MSM1_.shape[1]
+        stat = self.estimate_stat_msm(init=None, solver='lm')
+        alpha_msm = stat.theta[0:msm_np]
+        alpha_cov_msm = stat.variance[0:msm_np, 0:msm_np]
+
+        # Drawing statistical model parameters
+        stat_params = np.random.multivariate_normal(mean=alpha_msm, cov=alpha_cov_msm, size=mc_iterations)
+
+        # Preparing data for estimation procedure via Pool
         d1 = self.data.loc[self.data[self.sample] == 1].copy()
         n1 = d1.shape[0]
-        d0 = self.data.loc[self.data[self.sample] == 0].copy()
-        n0 = d0.shape[0]
-        meta_data = [self.outcome, self.action, self.sample, self.positive,
-                     self._action_model_, self._sample_model_, self._outcome_model_,
-                     self._msm_model_, self._math_model_]
-
-        # Packaging data set here so no seed issues later
-        for i in range(mc_iterations):
-            d1s = d1.sample(n=n1, replace=True)
-            d0s = d0.sample(n=n0, replace=True)
-            ds = pd.concat([d1s, d0s])
-            params.append([ds, self._math_param_[i], meta_data])
+        params = [[d1.sample(n=n1, replace=True),
+                   stat_params[j], self._math_param_[j],
+                   self._msm_model_, self._math_model_, self.action,
+                   ] for j in range(mc_iterations)]
 
         # Running point estimation with multiple CPUs
         with Pool(processes=n_cpus) as pool:
-            estimates = list(pool.map(_msm_resample_,  # Call outside function
-                                      params))         # provide packed input
+            estimates = list(pool.map(_msm_semiparametric_bootstrap_,  # Call outside function
+                                      params))                         # ... and provide packed input
 
         # Processing results
         self.estimates = estimates
@@ -137,45 +135,32 @@ class SynthesisMSM:
         self.ace_var = np.nanvar(estimates)
         self.ace_ci = np.nanpercentile(estimates, q=[2.5, 97.5])
 
-    def point_estimate(self, math_parameters):
-        # Computing the point estimate for a single random draw
-        a = np.asarray(self.stack_data[self.action])
-        s = np.asarray(self.stack_data[self.sample])
-        r = np.asarray(self.stack_data[self.positive])
-        math_offset = np.dot(self._MATH_, math_parameters).flatten()
+    def estimate_stat_msm(self, init=None, solver='lm'):
+        y = np.asarray(self.data[self.outcome])
+        a = np.asarray(self.data[self.action])
+        s = np.asarray(self.data[self.sample])
+        r = np.asarray(self.data[self.positive])
+        Z = np.asarray(self._PS_)
+        W = np.asarray(self._SW_)
+        X = np.asarray(self._X_)
+        X1 = np.asarray(self._Xa1_)
+        X0 = np.asarray(self._Xa0_)
+        M1 = np.asarray(self._MSM1_)
+        M0 = np.asarray(self._MSM0_)
 
-        # Fitting action process model
-        f = sm.families.Binomial()
-        act = smf.glm(self.action+" ~ "+self._action_model_,
-                      self.stack_data.loc[self.stack_data[self.copy_ind] == 0],
-                      family=f).fit()
-        pr_a1 = act.predict(self.stack_data)
-        iptw = 1 / np.where(a == 1, pr_a1, 1 - pr_a1)
+        def psi_stat_msm(theta):
+            return ee_synth_msm_only(theta, y, a, s, r,
+                                     Z, W,
+                                     X, X1, X0,
+                                     M1, M0,
+                                     model='linear')
 
-        # Fitting sample process model
-        f = sm.families.Binomial()
-        smp = smf.glm(self.sample+" ~ "+self._sample_model_,
-                      self.stack_data.loc[(self.stack_data[self.copy_ind] == 0) & r],
-                      family=f).fit()
-        pr_s1 = smp.predict(self.stack_data)
-        iosw = s + (1-s)*(pr_s1 / (1 - pr_s1))
+        if init is None:
+            init = [-15., 67., 0., 0.] + [0., ]*Z.shape[1] + [0., ]*W.shape[1] + [0., ]*X.shape[1]
 
-        # Fitting the outcome process model
-        ipw = iptw*iosw
-        f = sm.families.Gaussian()
-        out = smf.glm(self.outcome + " ~ "+self._outcome_model_,
-                      self.stack_data,
-                      freq_weights=ipw, family=f).fit()
-        self.stack_data['ydiffhat'] = out.predict(self.stack_data)
-
-        # Fitting the MSM
-        msm = smf.glm("ydiffhat ~ " + self._msm_model_,
-                      self.stack_data.loc[(self.stack_data[self.copy_ind] == 1) & r],
-                      family=f).fit()
-        ypred = msm.predict(self.stack_data) + math_offset
-        ya1 = ypred[(self.stack_data[self.action] == 1) & (self.stack_data[self.sample] == 1)]
-        ya0 = ypred[(self.stack_data[self.action] == 0) & (self.stack_data[self.sample] == 1)]
-        return np.mean(ya1) - np.mean(ya0)
+        estr = MEstimator(psi_stat_msm, init=init)
+        estr.estimate(solver=solver, maxiter=100000)
+        return estr
 
 
 class SynthesisCACE:
@@ -263,27 +248,27 @@ class SynthesisCACE:
         self._math_param_ = parameters
 
     def estimate(self, mc_iterations, n_cpus=1):
-        # Preparing data for estimation procedure
-        params = []
+        # Estimating statistical model parameters
+        cace_np = self._CACE_.shape[1]
+        stat = self.estimate_stat_cace(init=None, solver='lm')
+        gamma_msm = stat.theta[0:cace_np]
+        gamma_cov_msm = stat.variance[0:cace_np, 0:cace_np]
+
+        # Drawing statistical model parameters
+        stat_params = np.random.multivariate_normal(mean=gamma_msm, cov=gamma_cov_msm, size=mc_iterations)
+
+        # Preparing data for estimation procedure via Pool
         d1 = self.data.loc[self.data[self.sample] == 1].copy()
         n1 = d1.shape[0]
-        d0 = self.data.loc[self.data[self.sample] == 0].copy()
-        n0 = d0.shape[0]
-        meta_data = [self.outcome, self.action, self.sample, self.positive,
-                     self._action_model_, self._sample_model_, self._outcome_model_,
-                     self._cace_model_, self._math_model_]
-
-        # Packaging data set here so no seed issues later
-        for i in range(mc_iterations):
-            d1s = d1.sample(n=n1, replace=True)
-            d0s = d0.sample(n=n0, replace=True)
-            ds = pd.concat([d1s, d0s])
-            params.append([ds, self._math_param_[i], meta_data])
+        params = [[d1.sample(n=n1, replace=True),
+                   stat_params[j], self._math_param_[j],
+                   self._cace_model_, self._math_model_,
+                   ] for j in range(mc_iterations)]
 
         # Running point estimation with multiple CPUs
         with Pool(processes=n_cpus) as pool:
-            estimates = list(pool.map(_cace_resample_,  # Call outside function
-                                      params))          # provide packed input
+            estimates = list(pool.map(_cace_semiparametric_bootstrap_,  # Call outside function
+                                      params))                          # ... and provide packed input
 
         # Processing results
         self.estimates = estimates
@@ -291,44 +276,30 @@ class SynthesisCACE:
         self.ace_var = np.nanvar(estimates)
         self.ace_ci = np.nanpercentile(estimates, q=[2.5, 97.5])
 
-    def point_estimate(self, math_parameters):
-        # Computing the point estimate for a single random draw
+    def estimate_stat_cace(self, init=None, solver='lm'):
+        y = np.asarray(self.data[self.outcome])
         a = np.asarray(self.data[self.action])
         s = np.asarray(self.data[self.sample])
         r = np.asarray(self.data[self.positive])
-        math_offset = np.dot(self._MATH_, math_parameters).flatten()
+        Z = np.asarray(self._PS_)
+        W = np.asarray(self._SW_)
+        X = np.asarray(self._X_)
+        Xa1 = np.asarray(self._Xa1_)
+        Xa0 = np.asarray(self._Xa0_)
+        CACE = np.asarray(self._CACE_)
 
-        # Fitting action process model
-        f = sm.families.Binomial()
-        act = smf.glm(self.action+" ~ "+self._action_model_,
-                      self.data,
-                      family=f).fit()
-        pr_a1 = act.predict(self.data)
-        iptw = 1 / np.where(a == 1, pr_a1, 1 - pr_a1)
+        def psi_stat_cace(theta):
+            return ee_synth_cace_only(theta, y, a, s, r,
+                                      Z, W,
+                                      X, Xa1, Xa0, CACE,
+                                      model='linear')
 
-        # Fitting sample process model
-        f = sm.families.Binomial()
-        smp = smf.glm(self.sample+" ~ "+self._sample_model_,
-                      self.data.loc[r == 1],
-                      family=f).fit()
-        pr_s1 = smp.predict(self.data)
-        iosw = s + (1-s)*(pr_s1 / (1 - pr_s1))
+        if init is None:
+            init = [0.]*CACE.shape[1] + [0., ]*Z.shape[1] + [0., ]*W.shape[1] + [0., ]*X.shape[1]
 
-        # Fitting the outcome process model
-        ipw = iptw*iosw
-        f = sm.families.Gaussian()
-        out = smf.glm(self.outcome+" ~ "+self._outcome_model_,
-                      self.data,
-                      freq_weights=ipw, family=f).fit()
-        self.data['ydiffhat'] = out.predict(self.data_a1) - out.predict(self.data_a0)
-
-        # Fitting the CACE model
-        f = sm.families.Gaussian()
-        cac = smf.glm('ydiffhat ~ '+self._cace_model_, self.data.loc[(s == 1) & (r == 1)], family=f).fit()
-        ydiff = cac.predict(self.data) + math_offset
-
-        ydiff_s = ydiff[self.data[self.sample] == 1]
-        return np.mean(ydiff_s)
+        estr = MEstimator(psi_stat_cace, init=init)
+        estr.estimate(solver=solver, maxiter=100000)
+        return estr
 
     def estimate_bounds(self, lower, upper, init=None, solver='lm'):
         def psi_synth_cace(theta):
@@ -353,14 +324,14 @@ class SynthesisCACE:
             init = [100., ] + [0., ]*CACE.shape[1] + [0., ]*Z.shape[1] + [0., ]*W.shape[1] + [0., ]*X.shape[1]
 
         estr = MEstimator(psi_synth_cace, init=init)
-        estr.estimate(solver=solver, maxiter=10000)
+        estr.estimate(solver=solver, maxiter=100000)
         lbound = estr.theta[0]
         lbound_ci = estr.confidence_intervals()[0, 0]
 
         # Calculating upper bound
         math_offset = np.dot(self._MATH_, upper).flatten()
         estr = MEstimator(psi_synth_cace, init=init)
-        estr.estimate(solver=solver, maxiter=10000)
+        estr.estimate(solver=solver, maxiter=100000)
         ubound = estr.theta[0]
         ubound_ci = estr.confidence_intervals()[0, 1]
 
@@ -369,37 +340,30 @@ class SynthesisCACE:
         self.bounds_ci = lbound_ci, ubound_ci
 
 
-def _msm_resample_(params):
-    # Internal function to call the synthesis point procedure for multi-CPU
-    data, math, meta = params
+def _msm_semiparametric_bootstrap_(params):
+    d, sp, mp, msm_model, math_model, action = params
 
-    saipw = SynthesisMSM(data=data, outcome=meta[0], action=meta[1],
-                         sample=meta[2], positive_region=meta[3])
-    saipw.action_model(meta[4])
-    saipw.sample_model(meta[5])
-    saipw.outcome_model(meta[6])
-    saipw.marginal_structural_model(meta[7])
-    saipw.math_model(meta[8], parameters=None)
-    try:
-        est = saipw.point_estimate(math_parameters=math)
-    except:
-        est = np.nan
-    return est
+    # Setting actions in copy of data
+    d1 = d.copy()
+    d1[action] = 1
+    W1 = patsy.dmatrix(msm_model, d1, return_type='dataframe')
+    W1_star = patsy.dmatrix(math_model, d1, return_type='dataframe')
+    ya1 = np.dot(W1, sp) + np.dot(W1_star, mp)
+
+    d0 = d.copy()
+    d0[action] = 0
+    W0 = patsy.dmatrix(msm_model, d0, return_type='dataframe')
+    W0_star = patsy.dmatrix(math_model, d0, return_type='dataframe')
+    ya0 = np.dot(W0, sp) + np.dot(W0_star, mp)
+
+    return np.mean(ya1 - ya0)
 
 
-def _cace_resample_(params):
-    # Internal function to call the synthesis point procedure for multi-CPU
-    data, math, meta = params
+def _cace_semiparametric_bootstrap_(params):
+    d, sp, mp, cace_model, math_model = params
 
-    saipw = SynthesisCACE(data=data, outcome=meta[0], action=meta[1],
-                          sample=meta[2], positive_region=meta[3])
-    saipw.action_model(meta[4])
-    saipw.sample_model(meta[5])
-    saipw.outcome_model(meta[6])
-    saipw.cace_model(meta[7])
-    saipw.math_model(meta[8], parameters=None)
-    try:
-        est = saipw.point_estimate(math_parameters=math)
-    except:
-        est = np.nan
-    return est
+    # Setting actions in copy of data
+    V1 = patsy.dmatrix(cace_model, d, return_type='dataframe')
+    V1_star = patsy.dmatrix(math_model, d, return_type='dataframe')
+    cace = np.dot(V1, sp) + np.dot(V1_star, mp)
+    return np.mean(cace)

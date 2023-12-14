@@ -6,6 +6,7 @@
 #######################################################################################################################
 
 import numpy as np
+import pandas as pd
 
 from dgm import generate_target_trial
 from statistical import StatMSM, StatCACE
@@ -93,3 +94,57 @@ def math_parameters_cace(n, scenario):
 
     # Packaging up parameters for outputting
     return (params[2], std_dev[2]), (params[3], std_dev[3])
+
+
+def calculate_metrics(data, estimator, truth):
+    """Calculate the metrics of interest for the simulation
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Simulation output from the `run_estimators.py` file
+    estimator :
+        Column indicator for scenario (string defined below)
+
+    Returns
+    -------
+    list
+    """
+    bias = np.mean(data['est_' + estimator] - truth)
+    rbias = bias / truth
+    cld = np.mean(data['upp_' + estimator] - data['low_' + estimator])
+    cov = np.where((data['low_' + estimator] <= truth) & (data['upp_' + estimator] >= truth), 1, 0)
+    cover = np.mean(cov)
+    return bias, rbias, cld, cover
+
+
+def create_table(data, truth):
+    """Function to create a table of the simulation results
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Simulation output from the `run_estimators.py` file
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    # Creating blank DataFrame
+    table = pd.DataFrame(columns=['Estimator',
+                                  'Bias', 'RBias',
+                                  'CLD', 'Coverage'])
+
+    # String indicators for all scenarios explored
+    estrs = ['rt', 'rc', 'ex',
+             'syn_msm1', 'syn_msm2', 'syn_msm3', 'syn_msm4',
+             'syn_cac1', 'syn_cac2', 'syn_cac3', 'syn_cac4'
+             ]
+
+    # Calculating metrics for each estimator, then adding as a row in the table
+    for estr in estrs:
+        bias, rbias, cld, cover = calculate_metrics(data=data, estimator=estr, truth=truth)
+        table.loc[len(table.index)] = [estr, bias, rbias, cld, cover]
+
+    # Return processed simulation results
+    return table.set_index("Estimator")

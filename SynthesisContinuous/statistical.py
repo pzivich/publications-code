@@ -97,7 +97,7 @@ class StatAIPW:
                                 Z=Z, W=W, X=X, Xa1=Xa1, Xa0=Xa0)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver=solver, maxiter=20000)
+        estr.estimate(solver=solver, maxiter=100000)
         ci = estr.confidence_intervals(alpha=0.05)
 
         # Storing results from the procedure
@@ -146,7 +146,7 @@ class StatMSM:
             return ee_stat_msm(theta=theta, y=y, MSM=MSM)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver=solver, maxiter=20000)
+        estr.estimate(solver=solver, maxiter=100000)
 
         # Storing results from the procedure
         self.params = estr.theta
@@ -220,7 +220,7 @@ class StatCACE:
             return ee_stat_cace(theta=theta, y=y, X=X, Xa1=Xa1, Xa0=Xa0, CACE=CACE)
 
         estr = MEstimator(psi_aipw, init=init)
-        estr.estimate(solver=solver, maxiter=20000)
+        estr.estimate(solver=solver, maxiter=100000)
 
         # Storing results from the procedure
         self.params = estr.theta

@@ -249,6 +249,89 @@ def ee_synth_aipw_msm(theta, y, a, s, r, c, Z, W, X, MSM, math_contribution, mod
                       ee_act, ee_sam, ee_out])
 
 
+def ee_synth_msm_only(theta, y, a, s, r, Z, W, X, X1, X0, M1, M0, model='linear'):
+    """Statistical MSM for the synthesis AIPW model based on the MSM. This estimating equation estimates the MSM for
+    the positive region(s).
+
+    Parameters
+    ----------
+    theta :
+        Parameter vector
+    y :
+        Outcome array
+    a :
+        Action array
+    s :
+        Sample indicator array
+    r :
+        Indicator of observations in the positive region
+    Z :
+        Design matrix for propensity score model
+    W :
+        Design matrix for the sampling model
+    X :
+        Design matrix for the outcome model
+    MSM :
+        Design matrix for the marginal structural model
+    model :
+        Distribution of Y for the outcome model
+    """
+    idxC = M1.shape[1]            # MSM parameter number
+    idxZ = Z.shape[1] + idxC       # IPTW model parameter number
+    idxW = W.shape[1] + idxZ       # IOSW model parameter number
+    alpha = theta[0:idxC]          # Nuisance Paramters: CACE
+    eta1 = theta[idxC:idxZ]        # Nuisance parameters: Pr(A|R=0)
+    eta2 = theta[idxZ: idxW]       # Nuisance parameters: Pr(R|V,W)
+    eta3 = theta[idxW:]            # Nuisance parameters: Pr(Y|A,V,W,R=0)
+
+    # Estimating nuisance model: action process
+    ee_act = ee_regression(theta=eta1,
+                           X=Z,
+                           y=a,
+                           model='logistic')
+    ee_act = np.nan_to_num(ee_act, copy=True, nan=0.)
+    ee_act = ee_act * (1-s)
+    pi_a = inverse_logit(np.dot(Z, eta1))
+
+    # Estimating nuisance model: sample process
+    ee_sam = ee_regression(theta=eta2,
+                           X=W,
+                           y=s,
+                           model='logistic')
+    ee_sam = ee_sam * r
+    pi_s = inverse_logit(np.dot(W, eta2))
+
+    # Computing the overall weights
+    iptw = 1 / np.where(a == 1, pi_a, 1 - pi_a)
+    iosw = (pi_s / (1 - pi_s))
+    ipw = iptw*iosw
+
+    # Estimating nuisance model: outcome process
+    ee_out = ee_regression(theta=eta3,
+                           X=X,
+                           y=y,
+                           model=model,
+                           weights=ipw)
+    ee_out = np.nan_to_num(ee_out, copy=False, nan=0.)
+    ee_out = ee_out * (1-s)
+    if model == 'logistic':
+        y1hat = inverse_logit(np.dot(X1, eta3))
+        y0hat = inverse_logit(np.dot(X0, eta3))
+    else:
+        y1hat = np.dot(X1, eta3)
+        y0hat = np.dot(X0, eta3)
+
+    # Marginal structural model with AIPW pseudo-outcomes
+    ee_msm1 = ee_regression(theta=alpha, y=y1hat, X=M1, model=model)
+    ee_msm0 = ee_regression(theta=alpha, y=y0hat, X=M0, model=model)
+    ee_msm = ee_msm1 + ee_msm0
+    ee_msm = np.nan_to_num(ee_msm, copy=False, nan=0.)
+    ee_msm = ee_msm * r * s
+
+    # Returning the stacked estimating equations
+    return np.vstack([ee_msm, ee_act, ee_sam, ee_out])
+
+
 def ee_synth_aipw_cace(theta, y, a, s, r, Z, W, X, Xa1, Xa0, CACE, math_contribution, model='linear'):
     """Synthesis AIPW model estimating functions based on conditional average causal effect models.
 
@@ -340,3 +423,89 @@ def ee_synth_aipw_cace(theta, y, a, s, r, Z, W, X, Xa1, Xa0, CACE, math_contribu
     return np.vstack([ee_ace, ee_cace,
                      ee_act, ee_sam, ee_out])
 
+
+def ee_synth_cace_only(theta, y, a, s, r, Z, W, X, Xa1, Xa0, CACE, model='linear'):
+    """Synthesis AIPW model estimating functions based on conditional average causal effect models.
+
+    Parameters
+    ----------
+    theta :
+        Parameter vector
+    y :
+        Outcome array
+    a :
+        Action array
+    s :
+        Sample indicator array
+    r :
+        Indicator of observations in the positive region
+    Z :
+        Design matrix for propensity score model
+    W :
+        Design matrix for the sampling model
+    X :
+        Design matrix for the outcome model
+    Xa1 :
+        Design matrix for the outcome model with A set to 1
+    Xa0 :
+        Design matrix for the outcome model with A set to 0
+    CACE :
+        Design matrix for the conditional average causal effect model
+    math_contribution :
+        Contribution of the mathematical model to each observation
+    model :
+        Distribution of Y for the outcome model
+    """
+    idxC = CACE.shape[1]           # MSM parameter number
+    idxZ = Z.shape[1] + idxC       # IPTW model parameter number
+    idxW = W.shape[1] + idxZ       # IOSW model parameter number
+    gamma = theta[0:idxC]          # Nuisance Paramters: CACE
+    eta1 = theta[idxC: idxZ]       # Nuisance parameters: Pr(A|R=0)
+    eta2 = theta[idxZ: idxW]       # Nuisance parameters: Pr(R|V,W)
+    eta3 = theta[idxW:]            # Nuisance parameters: Pr(Y|A,V,W,R=0)
+
+    # Estimating nuisance model: action process
+    ee_act = ee_regression(theta=eta1,
+                           X=Z,
+                           y=a,
+                           model='logistic')
+    ee_act = np.nan_to_num(ee_act, copy=True, nan=0.)
+    pi_a = inverse_logit(np.dot(Z, eta1))
+
+    # Estimating nuisance model: sample process
+    ee_sam = ee_regression(theta=eta2,
+                           X=W,
+                           y=s,
+                           model='logistic') * r
+    pi_s = inverse_logit(np.dot(W, eta2))
+
+    # Computing the overall weights
+    iptw = 1 / np.where(a == 1, pi_a, 1 - pi_a)
+    iosw = (pi_s / (1 - pi_s))
+    ipw = iptw*iosw
+
+    # Estimating nuisance model: outcome process
+    ee_out = ee_regression(theta=eta3,
+                           X=X,
+                           y=y,
+                           model=model,
+                           weights=ipw)
+    ee_out = np.nan_to_num(ee_out, copy=False, nan=0.)
+
+    # Generating pseudo-outcomes
+    if model == 'logistic':
+        y1hat = inverse_logit(np.dot(Xa1, eta3))
+        y0hat = inverse_logit(np.dot(Xa0, eta3))
+    else:
+        y1hat = np.dot(Xa1, eta3)
+        y0hat = np.dot(Xa0, eta3)
+
+    # Estimating nuisance model: conditional average causal effect
+    ee_cace = ee_regression(theta=gamma,
+                            X=CACE,
+                            y=y1hat - y0hat,
+                            model='linear')
+    ee_cace = np.nan_to_num(ee_cace, copy=False, nan=0.)
+    ee_cace = ee_cace * r * s
+
+    return np.vstack([ee_cace, ee_act, ee_sam, ee_out])
