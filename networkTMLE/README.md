@@ -34,9 +34,9 @@ Dependencies for `NetworkTMLE` consists of
 - `statsmodels v0.9+`
 - `patsy v0.5+`
 - `scipy`
-- `NetworkX v2.0+`
+- `NetworkX v2.x`
 
-*NOTE:* `NetworkTMLE` may not work with versions of NetworkX before 2.0
+*NOTE:* `NetworkTMLE` and `Beowulf` may not work with versions of NetworkX before 2.0 or after 3.0
 
 ### Install
 

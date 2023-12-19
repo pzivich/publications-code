@@ -8,7 +8,8 @@ setup(name='beowulf',
       version=__version__,
       description='Beowulf is the various data generating mechanisms',
       keywords='DGM',
-      packages=['beowulf'],
+      packages=['beowulf',
+                'beowulf.dgm'],
       include_package_data=True,
       author='Paul Zivich'
       )

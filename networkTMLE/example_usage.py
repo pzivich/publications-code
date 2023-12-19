@@ -1,10 +1,11 @@
 ############################################################################################
-# Example of Targetula with simulated data generating mechanisms
-#   This file demonstrates basic usage of the Targetula class with some of the available
+# Example of MossSpider with simulated data generating mechanisms
+#   This file demonstrates basic usage of the NetworkTMLE class with some of the available
 #       data generating mechanisms
 ############################################################################################
 
-from amonhen import NetworkTMLE
+from mossspider import NetworkTMLE  # current library
+# from amonhen import NetworkTMLE   # internal version, recommended to use library above instead
 from beowulf import (sofrygin_observational, generate_sofrygin_network,
                      load_uniform_statin, load_random_naloxone, load_uniform_diet, load_random_vaccine)
 from beowulf.dgm import statin_dgm, naloxone_dgm, diet_dgm, vaccine_dgm
