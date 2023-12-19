@@ -9,21 +9,20 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from dgm import generate_data
+from dgm import generate_data, calculate_truth
 from statistical import StatAIPW
 from synthesis import SynthesisMSM, SynthesisCACE
-from helper import math_parameters_msm, math_parameters_cace, trapezoid
+from helper import math_parameters_msm, math_parameters_cace, trapezoid, create_table
 
 ################################################
 # General setup
 warnings.filterwarnings("ignore")       # Ignoring some statsmodels GLM link-dist warnings
-np.random.seed(48151623)                # Setting RNG seed
-runs = 1000                             # Number of simulations
+runs = 2000                             # Number of simulations
 n1, n0 = 1000, 500                      # Sample size for each data set
 mc_iters = 10000                        # Number of Monte Carlo iterations for synthesis estimators
 n_cpus_avail = 30                       # Number of CPUs to parallelize the Monet Carlo with
-scenario = 1                            # Scenario to apply
-
+scenario = 2                            # Scenario to apply
+np.random.seed(48151623 + scenario*n0)  # Setting RNG seed
 
 ################################################
 # Model Specifications
@@ -60,7 +59,7 @@ if __name__ == '__main__':
 
     # Running the simulations
     for i in range(runs):
-        # print("starting", i+1, "...")
+        print("starting", i+1, "...")
         row = []
 
         ############################################
@@ -207,8 +206,6 @@ if __name__ == '__main__':
         aipw_sc.cace_model(cace_model)
         aipw_sc.math_model(model=math_cace,
                            parameters=math_cace_params)
-        aipw_sc.estimate(mc_iterations=mc_iters,
-                         n_cpus=n_cpus_avail)
         try:
             aipw_sc.estimate(mc_iterations=mc_iters,
                              n_cpus=n_cpus_avail)
@@ -287,7 +284,14 @@ if __name__ == '__main__':
         results.loc[len(results.index)] = row
 
     #######################################################################
-    # Saving Resuts upon Completion
+    # Saving Full Results upon Completion
     results.to_csv("s"+str(scenario)+"_results_n1-"+str(n1)+"_n0-"+str(n0)+".csv", index=False)
+
+    #######################################################################
+    # Creating Overall Summary Results
+    # truth = calculate_truth(n=20000000, scenario=scenario)
+    # table = create_table(data=results, truth=truth)
+    # print(table.round(2))
+    # table.to_csv("results_table_"+"s"+str(scenario)+"_n0-"+str(n0)+".csv")
 
 # END
