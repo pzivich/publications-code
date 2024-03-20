@@ -7,6 +7,7 @@
 
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from time import time
 from multiprocessing import Pool
 from delicatessen import MEstimator
@@ -24,7 +25,7 @@ if __name__ == "__main__":
 
     ######################################
     # Loading Data
-    d = pd.read_csv("data/addhealth.csv")
+    d = pd.read_csv("../data/addhealth.csv")
     d['intercept'] = 1
 
     # Scaling continuous variables as standard normals
@@ -139,6 +140,24 @@ if __name__ == "__main__":
     print(estr_nev.confidence_intervals()[0, :])
     print("")
 
+    print("All-Act - Sandwich -- solving roots outside delicatessen")
+    start = time()
+    logm = sm.GLM(endog=y, exog=X1, family=sm.families.Binomial(),
+                  missing='drop').fit()
+    ystar1 = logm.predict(X1a)
+    init_m1 = list(logm.params)
+    logm = sm.GLM(endog=ystar1, exog=X0, family=sm.families.Binomial(),
+                  missing='drop').fit()
+    init_m2 = list(logm.params)
+    init_vals = [0.18, ] + init_m1 + init_m2
+    estr_nev = MEstimator(psi_ice_prevent, init=init_vals, subset=[0, ])
+    estr_nev.estimate(solver='lm', maxiter=20000)
+    print("Run-time:", time() - start)
+    print(estr_nev.theta[0])
+    print(np.sqrt(estr_nev.variance[0, 0]))
+    print(estr_nev.confidence_intervals()[0, :])
+    print("")
+
     print("All-Act - Bootstrap")
     start = time()
     est = ice_point(y_t2=y, X_t1=X1, X_t0=X0, Xa_t1=X1a, Xa_t0=X0a)
@@ -168,10 +187,17 @@ if __name__ == "__main__":
     print("")
 
     def psi_ice_abe(theta):
-        mu = theta[0]
+        n1dim = X1.shape[1]
         ndim = 1+X1.shape[1]+X0.shape[1]
-        alpha = theta[1:1+ndim]
-        beta = theta[1+ndim:]
+
+        mu = theta[0]
+        mu1 = theta[1]
+        beta1 = list(theta[2:2+n1dim])
+        beta0 = list(theta[2+n1dim: 1+ndim])
+        mun = theta[1+ndim]
+        alpha0 = list(theta[2+ndim:])
+        alpha = [mun, ] + beta1 + alpha0
+        beta = [mu1, ] + beta1 + beta0
 
         # Natural-course ICE g-formula
         ee_n = ee_ice_gformula(theta=alpha,
@@ -179,6 +205,8 @@ if __name__ == "__main__":
                                X_array=[X1, X0],
                                Xa_array=[X1, X0],
                                )
+        indices = [i for i in range(1, n1dim+1)]
+        ee_n = np.delete(ee_n, indices, axis=0)
 
         # Never smoke ICE g-formula
         ee_a = ee_ice_gformula(theta=beta,
@@ -191,16 +219,38 @@ if __name__ == "__main__":
         ee_m = np.ones(y.shape[0])*(alpha[0] - beta[0] + mu)
 
         # Return stack of estimating equations
-        return np.vstack([ee_m, ee_n, ee_a])
-
+        return np.vstack([ee_m, ee_a, ee_n])
 
     print("ABE - Sandwich")
     start = time()
     init_vals = [0.18, ] + [0., ]*X1.shape[1] + [0., ]*X0.shape[1]
     estr_nat = MEstimator(psi_ice_natural, init=init_vals)
     estr_nat.estimate(solver='lm', maxiter=20000)
-    init_vals = [0.0, ] + list(estr_nat.theta) + list(estr_nev.theta)
+    init_nat_nuisance = estr_nat.theta[1+X1.shape[1]:]
+    init_vals = [0.0, ] + list(estr_nev.theta) + [0.18, ] + list(init_nat_nuisance)
     estr_abe = MEstimator(psi_ice_abe, init=init_vals)
+    estr_abe.estimate(solver='lm', maxiter=20000)
+    print("Run-time:", time() - start)
+    print(estr_abe.theta[0])
+    print(np.sqrt(estr_abe.variance[0, 0]))
+    print(estr_abe.confidence_intervals()[0, :])
+    print("")
+
+    print("ABE - Sandwich -- solving roots outside delicatessen")
+    start = time()
+    logm = sm.GLM(endog=y, exog=X1, family=sm.families.Binomial(),
+                  missing='drop').fit()
+    ystar1 = logm.predict(X1a)
+    ystarn = logm.predict(X1)
+    init_m1 = list(logm.params)
+    logm = sm.GLM(endog=ystar1, exog=X0, family=sm.families.Binomial(),
+                  missing='drop').fit()
+    init_m2 = list(logm.params)
+    logm = sm.GLM(endog=ystarn, exog=X0, family=sm.families.Binomial(),
+                  missing='drop').fit()
+    init_m3 = list(logm.params)
+    init_vals = [0., 0.18, ] + init_m1 + init_m2 + [0.18, ] + init_m3
+    estr_abe = MEstimator(psi_ice_abe, init=init_vals, subset=[0, 1, 2+len(init_m1)+len(init_m2)])
     estr_abe.estimate(solver='lm', maxiter=20000)
     print("Run-time:", time() - start)
     print(estr_abe.theta[0])
