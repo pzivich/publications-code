@@ -1,9 +1,9 @@
 # Publicly Available Code
 
-[![DOI](https://zenodo.org/badge/258263929.svg)](https://zenodo.org/badge/latestdoi/258263929)
+This repository is a collection of publicly available code from my past publications. This repository is for
+long-term storage and future reference. In addition to GitHub, all code is stored on Zenodo at the following DOI
 
-This repository is a collection of publicly available code from my past publications. This repository is for 
-long-term storage and future reference. In addition to GitHub, all code is stored on Zenodo.
+[![DOI](https://zenodo.org/badge/258263929.svg)](https://zenodo.org/badge/latestdoi/258263929)
 
 ## Manifesto
 
@@ -15,13 +15,16 @@ Outcomes: A Simulated Example in the Context of Vaccination". *American Journal 
 
 ### BridgeComparisonIntro
 Zivich PN, Cole SR, Edwards JK, Shook-Sa BE, Breskin A, and Hudgens MG. "Bridged treatment comparisons: an illustrative
-application in HIV treatment." *arXiv* arXiv:2206.04445.
+application in HIV treatment". *arXiv* arXiv:2206.04445.
 [![arXiv](https://img.shields.io/badge/arXiv-2206.04445-b31b1b.svg)](https://arxiv.org/abs/2206.04445)
+
+### CausalRNG
+Zivich PN. "Invited Commentary: The Seedy Side of Causal Effect Estimation with Machine Learning". *Submitted*.
 
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
 2021;32(3):393-401.
-[![arXiv](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
+[![PubMed](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
 
 ### GCompMSM
 Zivich PN, Shook-Sa BE. "Practical Implementation of g-computation for marginal structural models" *Submitted* 2023.
