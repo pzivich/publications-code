@@ -3,3 +3,4 @@
 *.so
 *.egg-info
 .idea
+SynthesisContinuous/data/*
