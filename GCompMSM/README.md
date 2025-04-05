@@ -1,4 +1,4 @@
-# Estimating marginal structural models with g-computation
+# Estimating Marginal Structural Model Parameters for Time-Fixed, Binary Actions with g-computation and Estimating Equations
 
 ### Paul N Zivich, Bonnie E Shook-Sa
 
