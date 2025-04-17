@@ -1,3 +1,9 @@
+######################################################################################################################
+# Code to generate the risk function plots for Collett
+#
+# Paul Zivich (Last update: 2025/4/16)
+######################################################################################################################
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

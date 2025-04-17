@@ -4,6 +4,9 @@
 
 --------------------------------
 
+NOTE: to recreate the results, you will need to copy the `efuncs.py` file into the folder you want to recreate. This
+is a limitation of how the relative importing works and the code organization.
+
 ## File Manifesto
 
 `data/`
@@ -36,5 +39,17 @@
 `Lau.ipynb`
 - A walkthrough of the application to the data from Lau et al. See `plots/` or `time-trials/` for those results
 
-NOTE: to recreate the results, you will need to copy the `efuncs.py` file into the folder you want to recreate. This
-is a limitation of how the relative importing works and the code organization.
+
+--------------------------------
+
+Package versions used
+
+```
+NumPy:        1.25.2
+pandas:       1.4.1
+SciPy:        1.11.2
+delicatessen: 3.0
+matplotlib:   3.9.2
+lifeslines:   0.27.3
+statsmodels:  0.14.1
+```

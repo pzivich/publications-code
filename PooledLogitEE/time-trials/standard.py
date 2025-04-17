@@ -1,3 +1,9 @@
+######################################################################################################################
+# Code for the standard implementation of pooled logistic for the time-trials
+#
+# Paul Zivich (Last update: 2025/4/17)
+######################################################################################################################
+
 import warnings
 import numpy as np
 import pandas as pd

@@ -1,3 +1,10 @@
+######################################################################################################################
+# Code for time-trials with data from Lau et al.
+#   Results for the run times are provided as a comment at the end
+#
+# Paul Zivich (Last update: 2025/4/17)
+######################################################################################################################
+
 import warnings
 import numpy as np
 import pandas as pd
@@ -9,50 +16,6 @@ from standard import PooledLogitGComputation
 from efuncs import ee_pooled_logit, pooled_logit_prediction
 
 warnings.filterwarnings("ignore")
-
-# DAYS
-#
-# DISJOINT INDICATOR
-# EE implementation
-# RUNTIME: 90.23212885856628
-# [91.13238739967346, 90.7053689956665, 90.23212885856628, 90.0243592262268, 89.86978793144226]
-#
-# SPLINES
-# EE implementation
-# RUNTIME: 197.7266025543213
-# [197.520033121109, 198.94740772247314, 197.5561375617981, 197.9589364528656, 197.7266025543213]
-#
-# MONTHS
-#
-# DISJOINT INDICATOR
-# EE implementation
-# RUNTIME: 9.035911560058594
-# [9.035911560058594, 9.122483015060425, 9.040554761886597, 8.788015842437744, 8.928596019744873]
-#
-# Standard -- 1 CPU
-# 15842.782173633575
-#
-# Standard -- 7 CPU
-# 12383.032087087631
-#
-# SPLINES
-# EE implementation
-# RUNTIME: 4.150036573410034
-# [4.178802013397217, 4.126122713088989, 4.138530492782593, 4.150036573410034, 4.159050941467285]
-#
-# Standard -- 1 CPU
-#               RD    Var_RD    LCL_RD    UCL_RD
-# months
-# 121     0.161423  0.002822  0.057311  0.265535
-# RUNTIME: 847.3710839748383
-# [846.9671447277069, 844.945689201355, 849.1422777175903, 847.3710839748383, 847.7141330242157]
-#
-# Standard -- 7 CPU
-#               RD    Var_RD    LCL_RD    UCL_RD
-# months
-# 121     0.161423  0.002822  0.057311  0.265535
-# RUNTIME: 416.68259739875793
-# [419.7636342048645, 416.68259739875793, 413.4574885368347, 412.8561851978302, 417.1200199127197]
 
 
 if __name__ == "__main__":
@@ -129,25 +92,25 @@ if __name__ == "__main__":
         # Returning stacked estimating equations
         return np.vstack([ee_rd, ee_plog1, ee_plog0])
 
-    # print("EE implementation")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     inits = [0., ] * W.shape[1] + [-5., ] + [0., ] * (params_plr_a1 - 1)
-    #     estr = MEstimator(psi_plogit_a1, init=inits)
-    #     estr.estimate()
-    #     starting_a1 = list(estr.theta)
-    #     inits = [0., ] * W.shape[1] + [-5., ] + [0., ] * (params_plr_a0 - 1)
-    #     estr = MEstimator(psi_plogit_a0, init=inits)
-    #     estr.estimate()
-    #     starting_a0 = list(estr.theta)
-    #     inits = [0., ] * params_rd + starting_a1 + starting_a0
-    #     estr = MEstimator(psi_rd, init=inits)
-    #     estr.estimate()
-    #     run_times.append(time() - start)
-    #
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
+    print("EE implementation")
+    run_times = []
+    for i in range(5):
+        start = time()
+        inits = [0., ] * W.shape[1] + [-5., ] + [0., ] * (params_plr_a1 - 1)
+        estr = MEstimator(psi_plogit_a1, init=inits)
+        estr.estimate()
+        starting_a1 = list(estr.theta)
+        inits = [0., ] * W.shape[1] + [-5., ] + [0., ] * (params_plr_a0 - 1)
+        estr = MEstimator(psi_plogit_a0, init=inits)
+        estr.estimate()
+        starting_a0 = list(estr.theta)
+        inits = [0., ] * params_rd + starting_a1 + starting_a0
+        estr = MEstimator(psi_rd, init=inits)
+        estr.estimate()
+        run_times.append(time() - start)
+
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
 
     # print("Standard -- 1 CPU")
     # start = time()
@@ -207,25 +170,25 @@ if __name__ == "__main__":
         # Returning stacked estimating equations
         return np.vstack([ee_rd, ee_plog1, ee_plog0])
 
-    # print("EE implementation")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     inits = [0., ] * W.shape[1] + [-8., ] + [0., ] * 5
-    #     estr = MEstimator(psi_plogit_spline_a1, init=inits)
-    #     estr.estimate()
-    #     starting_a1 = list(estr.theta)
-    #     inits = [0., ] * W.shape[1] + [-8., ] + [0., ] * 5
-    #     estr = MEstimator(psi_plogit_spline_a0, init=inits)
-    #     estr.estimate()
-    #     starting_a0 = list(estr.theta)
-    #     inits = [0., ] * params_risk + starting_a1 + starting_a0
-    #     estr = MEstimator(psi_rd_spline, init=inits)
-    #     estr.estimate()
-    #     run_times.append(time() - start)
-    #
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
+    print("EE implementation")
+    run_times = []
+    for i in range(5):
+        start = time()
+        inits = [0., ] * W.shape[1] + [-8., ] + [0., ] * 5
+        estr = MEstimator(psi_plogit_spline_a1, init=inits)
+        estr.estimate()
+        starting_a1 = list(estr.theta)
+        inits = [0., ] * W.shape[1] + [-8., ] + [0., ] * 5
+        estr = MEstimator(psi_plogit_spline_a0, init=inits)
+        estr.estimate()
+        starting_a0 = list(estr.theta)
+        inits = [0., ] * params_risk + starting_a1 + starting_a0
+        estr = MEstimator(psi_rd_spline, init=inits)
+        estr.estimate()
+        run_times.append(time() - start)
+
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
 
     # print("Standard -- 1 CPU")
     # start = time()
@@ -266,25 +229,25 @@ if __name__ == "__main__":
     print("MONTHS")
     print("DISJOINT INDICATOR")
 
-    # print("EE implementation")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     inits = [0., ] * W.shape[1] + [-2., ] + [0., ] * (params_plr_a1 - 1)
-    #     estr = MEstimator(psi_plogit_a1, init=inits)
-    #     estr.estimate()
-    #     starting_a1 = list(estr.theta)
-    #     inits = [0., ] * W.shape[1] + [-2., ] + [0., ] * (params_plr_a0 - 1)
-    #     estr = MEstimator(psi_plogit_a0, init=inits)
-    #     estr.estimate()
-    #     starting_a0 = list(estr.theta)
-    #     inits = [0., ] * params_rd + starting_a1 + starting_a0
-    #     estr = MEstimator(psi_rd, init=inits)
-    #     estr.estimate()
-    #     run_times.append(time() - start)
-    #
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
+    print("EE implementation")
+    run_times = []
+    for i in range(5):
+        start = time()
+        inits = [0., ] * W.shape[1] + [-2., ] + [0., ] * (params_plr_a1 - 1)
+        estr = MEstimator(psi_plogit_a1, init=inits)
+        estr.estimate()
+        starting_a1 = list(estr.theta)
+        inits = [0., ] * W.shape[1] + [-2., ] + [0., ] * (params_plr_a0 - 1)
+        estr = MEstimator(psi_plogit_a0, init=inits)
+        estr.estimate()
+        starting_a0 = list(estr.theta)
+        inits = [0., ] * params_rd + starting_a1 + starting_a0
+        estr = MEstimator(psi_rd, init=inits)
+        estr.estimate()
+        run_times.append(time() - start)
+
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
 
     print("Standard -- 1 CPU")
     start = time()
@@ -317,52 +280,97 @@ if __name__ == "__main__":
                           power=2, restricted=True, normalized=False)
     s_matrix = np.concatenate([intercept, t_steps[:, None], time_splines], axis=1)
 
-    # print("EE implementation")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     inits = [0., ]*W.shape[1] + [-2., ] + [0., ]*5
-    #     estr = MEstimator(psi_plogit_spline_a1, init=inits)
-    #     estr.estimate()
-    #     starting_a1 = list(estr.theta)
-    #     inits = [0., ]*W.shape[1] + [-2., ] + [0., ]*5
-    #     estr = MEstimator(psi_plogit_spline_a0, init=inits)
-    #     estr.estimate()
-    #     starting_a0 = list(estr.theta)
-    #     inits = [0., ]*params_risk + starting_a1 + starting_a0
-    #     estr = MEstimator(psi_rd_spline, init=inits)
-    #     estr.estimate()
-    #     run_times.append(time() - start)
-    #
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
-    #
-    # print("Standard -- 1 CPU")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     plgc = PooledLogitGComputation(data=d, exposure='BASEIDU', time='months', delta='event', verbose=False)
-    #     plgc.create_time_splines(term=2, knots=[16, 32, 66, 100, 117])
-    #     plgc.outcome_model(model='BASEIDU*(black + cd4nadir + cd4_sp1 + cd4_sp2 + ageatfda + age_sp1 + age_sp2 '
-    #                              '+ months + months_spline1 + months_spline2 + months_spline3 + months_spline4)')
-    #     results = plgc.estimate(n_cpus=1, bs_iterations=1000, seed=80921)
-    #     run_times.append(time() - start)
-    #
-    # print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
-    #
-    # print("Standard -- 7 CPU")
-    # run_times = []
-    # for i in range(5):
-    #     start = time()
-    #     plgc = PooledLogitGComputation(data=d, exposure='BASEIDU', time='months', delta='event', verbose=False)
-    #     plgc.create_time_splines(term=2, knots=[16, 32, 66, 100, 117])
-    #     plgc.outcome_model(model='BASEIDU*(black + cd4nadir + cd4_sp1 + cd4_sp2 + ageatfda + age_sp1 + age_sp2 '
-    #                              '+ months + months_spline1 + months_spline2 + months_spline3 + months_spline4)')
-    #     results = plgc.estimate(n_cpus=7, bs_iterations=1000, seed=80921)
-    #     run_times.append(time() - start)
-    #
-    # print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    # print("RUNTIME:", np.median(run_times))
-    # print(run_times)
+    print("EE implementation")
+    run_times = []
+    for i in range(5):
+        start = time()
+        inits = [0., ]*W.shape[1] + [-2., ] + [0., ]*5
+        estr = MEstimator(psi_plogit_spline_a1, init=inits)
+        estr.estimate()
+        starting_a1 = list(estr.theta)
+        inits = [0., ]*W.shape[1] + [-2., ] + [0., ]*5
+        estr = MEstimator(psi_plogit_spline_a0, init=inits)
+        estr.estimate()
+        starting_a0 = list(estr.theta)
+        inits = [0., ]*params_risk + starting_a1 + starting_a0
+        estr = MEstimator(psi_rd_spline, init=inits)
+        estr.estimate()
+        run_times.append(time() - start)
+
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
+
+    print("Standard -- 1 CPU")
+    run_times = []
+    for i in range(5):
+        start = time()
+        plgc = PooledLogitGComputation(data=d, exposure='BASEIDU', time='months', delta='event', verbose=False)
+        plgc.create_time_splines(term=2, knots=[16, 32, 66, 100, 117])
+        plgc.outcome_model(model='BASEIDU*(black + cd4nadir + cd4_sp1 + cd4_sp2 + ageatfda + age_sp1 + age_sp2 '
+                                 '+ months + months_spline1 + months_spline2 + months_spline3 + months_spline4)')
+        results = plgc.estimate(n_cpus=1, bs_iterations=1000, seed=80921)
+        run_times.append(time() - start)
+
+    print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
+
+    print("Standard -- 7 CPU")
+    run_times = []
+    for i in range(5):
+        start = time()
+        plgc = PooledLogitGComputation(data=d, exposure='BASEIDU', time='months', delta='event', verbose=False)
+        plgc.create_time_splines(term=2, knots=[16, 32, 66, 100, 117])
+        plgc.outcome_model(model='BASEIDU*(black + cd4nadir + cd4_sp1 + cd4_sp2 + ageatfda + age_sp1 + age_sp2 '
+                                 '+ months + months_spline1 + months_spline2 + months_spline3 + months_spline4)')
+        results = plgc.estimate(n_cpus=7, bs_iterations=1000, seed=80921)
+        run_times.append(time() - start)
+
+    print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
+
+
+# DAYS
+#
+# DISJOINT INDICATOR
+# EE implementation
+# RUNTIME: 90.23212885856628
+# [91.13238739967346, 90.7053689956665, 90.23212885856628, 90.0243592262268, 89.86978793144226]
+#
+# SPLINES
+# EE implementation
+# RUNTIME: 197.7266025543213
+# [197.520033121109, 198.94740772247314, 197.5561375617981, 197.9589364528656, 197.7266025543213]
+#
+# MONTHS
+#
+# DISJOINT INDICATOR
+# EE implementation
+# RUNTIME: 9.035911560058594
+# [9.035911560058594, 9.122483015060425, 9.040554761886597, 8.788015842437744, 8.928596019744873]
+#
+# Standard -- 1 CPU
+# 15842.782173633575
+#
+# Standard -- 7 CPU
+# 12383.032087087631
+#
+# SPLINES
+# EE implementation
+# RUNTIME: 4.150036573410034
+# [4.178802013397217, 4.126122713088989, 4.138530492782593, 4.150036573410034, 4.159050941467285]
+#
+# Standard -- 1 CPU
+#               RD    Var_RD    LCL_RD    UCL_RD
+# months
+# 121     0.161423  0.002822  0.057311  0.265535
+# RUNTIME: 847.3710839748383
+# [846.9671447277069, 844.945689201355, 849.1422777175903, 847.3710839748383, 847.7141330242157]
+#
+# Standard -- 7 CPU
+#               RD    Var_RD    LCL_RD    UCL_RD
+# months
+# 121     0.161423  0.002822  0.057311  0.265535
+# RUNTIME: 416.68259739875793
+# [419.7636342048645, 416.68259739875793, 413.4574885368347, 412.8561851978302, 417.1200199127197]

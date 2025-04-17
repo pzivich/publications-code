@@ -1,3 +1,9 @@
+######################################################################################################################
+# Implementation of the estimating equations pooled logistic model compatible with delicatessen
+#
+# Paul Zivich (Last update: 2025/4/17)
+######################################################################################################################
+
 import numpy as np
 from delicatessen.utilities import inverse_logit
 from delicatessen.estimating_equations.processing import generate_weights
