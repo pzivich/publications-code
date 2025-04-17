@@ -6,39 +6,49 @@ from delicatessen import MEstimator
 from delicatessen.utilities import spline
 
 from standard import PooledLogitGComputation
-from ..efuncs import ee_pooled_logit, pooled_logit_prediction
+from efuncs import ee_pooled_logit, pooled_logit_prediction
 
 warnings.filterwarnings("ignore")
 
 # DISJOINT INDICATOR
+#
 # EE implementation
-# RUNTIME: 0.3128323554992676
+# RUNTIME: 0.31212353706359863
+# [0.3223865032196045, 0.31229472160339355, 0.31212353706359863, 0.30949902534484863, 0.3105039596557617]
 #
 # Standard -- 1 CPU
 #             RD    Var_RD    LCL_RD    UCL_RD
-#      -0.189233  0.025134 -0.499957  0.121492
-#
-# RUNTIME: 495.21120142936707
-# 489.70824694633484 523.9646537303925
+# time
+# 59   -0.189233  0.025134 -0.499957  0.121492
+# RUNTIME: 498.0906629562378
+# [482.8437101840973, 498.0906629562378, 496.69061183929443, 507.8601903915405, 498.8793394565582]
 #
 # Standard -- 7 CPU
 #             RD    Var_RD    LCL_RD    UCL_RD
-#      -0.189233  0.025134 -0.499957  0.121492
-# RUNTIME: 171.3387439250946
+# time
+# 59   -0.189233  0.025134 -0.499957  0.121492
+# RUNTIME: 185.51739645004272
+# 181.0094289779663 200.1832308769226
 #
 # SPLINES
+#
 # EE implementation
-# RUNTIME: 1.199704647064209
+# RUNTIME: 1.1790900707244873
+# [1.212967872619629, 1.1218619346618652, 1.2318201065063477, 1.1726322174072266, 1.1561682224273682]
 #
 # Standard -- 1 CPU
 #             RD    Var_RD    LCL_RD    UCL_RD
-#      -0.177775  0.020096 -0.455622  0.100072
-# RUNTIME: 53.583834409713745
+# time
+# 59   -0.177775  0.020096 -0.455622  0.100072
+# RUNTIME: 48.83258891105652
+# [49.10842537879944, 48.780088663101196, 48.83258891105652, 48.85434126853943, 48.61756992340088]
 #
 # Standard -- 7 CPU
 #             RD    Var_RD    LCL_RD    UCL_RD
-#      -0.177775  0.020096 -0.455622  0.100072
-# RUNTIME: 15.764265298843384
+# time
+# 59   -0.177775  0.020096 -0.455622  0.100072
+# RUNTIME: 15.87848949432373
+# [15.370906352996826, 15.87848949432373, 15.961869955062866, 15.874207019805908, 16.127304553985596]
 
 
 if __name__ == "__main__":
@@ -120,30 +130,30 @@ if __name__ == "__main__":
     print(run_times)
 
     print("Standard -- 1 CPU")
-    runtimes = []
+    run_times = []
     for i in range(5):
         start = time()
         plgc = PooledLogitGComputation(data=d, exposure='novel', time='time', delta='delta', verbose=False)
         plgc.outcome_model(model='novel*(init + size + C(time))')
         results = plgc.estimate(n_cpus=1, bs_iterations=1000, seed=80921)
-        runtimes.append(time() - start)
+        run_times.append(time() - start)
 
     print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    print("RUNTIME:", np.median(runtimes))
-    print(np.min(runtimes), np.max(runtimes))
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
 
     print("Standard -- 7 CPU")
-    runtimes = []
+    run_times = []
     for i in range(5):
         start = time()
         plgc = PooledLogitGComputation(data=d, exposure='novel', time='time', delta='delta', verbose=False)
         plgc.outcome_model(model='novel*(init + size + C(time))')
         results = plgc.estimate(n_cpus=7, bs_iterations=1000, seed=80921)
-        runtimes.append(time() - start)
+        run_times.append(time() - start)
 
     print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    print("RUNTIME:", np.median(runtimes))
-    print(np.min(runtimes), np.max(runtimes))
+    print("RUNTIME:", np.median(run_times))
+    print(np.min(run_times), np.max(run_times))
 
     ######################################
     # Example 1b: Splines
@@ -207,29 +217,29 @@ if __name__ == "__main__":
     print(run_times)
 
     print("Standard -- 1 CPU")
-    runtimes = []
+    run_times = []
     for i in range(5):
         start = time()
         plgc = PooledLogitGComputation(data=d, exposure='novel', time='time', delta='delta', verbose=False)
         plgc.create_time_splines(term=2, knots=[10, 20, 30, 40])
         plgc.outcome_model(model='novel*(init + size + time + time_spline1 + time_spline2 + time_spline3)')
         results = plgc.estimate(n_cpus=1, bs_iterations=1000, seed=80921)
-        runtimes.append(time() - start)
+        run_times.append(time() - start)
 
     print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    print("RUNTIME:", np.median(runtimes))
-    print(np.min(runtimes), np.max(runtimes))
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
 
     print("Standard -- 7 CPU")
-    runtimes = []
+    run_times = []
     for i in range(5):
         start = time()
         plgc = PooledLogitGComputation(data=d, exposure='novel', time='time', delta='delta', verbose=False)
         plgc.create_time_splines(term=2, knots=[10, 20, 30, 40])
         plgc.outcome_model(model='novel*(init + size + time + time_spline1 + time_spline2 + time_spline3)')
         results = plgc.estimate(n_cpus=7, bs_iterations=1000, seed=80921)
-        runtimes.append(time() - start)
+        run_times.append(time() - start)
 
     print(results[['RD', 'Var_RD', 'LCL_RD', 'UCL_RD']].tail(1))
-    print("RUNTIME:", np.median(runtimes))
-    print(np.min(runtimes), np.max(runtimes))
+    print("RUNTIME:", np.median(run_times))
+    print(run_times)
