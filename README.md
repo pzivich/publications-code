@@ -47,6 +47,10 @@ Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
 Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemiology* 2025; In-Press.
 [![PubMed](https://img.shields.io/badge/PubMed-39358996-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39358996/)
 
+### PooledLogitEE
+Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
+logistic regression". *Submitted* 2025.
+
 ### PooledTestingSARS2
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
 through differentiated pooling for distinct groups". *American Journal of Epidemiology* 2023;192(2):246-256.
