@@ -50,6 +50,7 @@ Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemio
 ### PooledLogitEE
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
 logistic regression". *Submitted* 2025.
+[![arXiv](https://img.shields.io/badge/arXiv-2504.13291-b31b1b.svg)](https://arxiv.org/abs/2504.13291)
 
 ### PooledTestingSARS2
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
