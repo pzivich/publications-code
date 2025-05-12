@@ -28,18 +28,22 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 2021;32(3):393-401.
 [![PubMed](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
 
+### FusedCohortStudies
+Cole SR, Zivich PN, Shook-Sa BE, Richardson DB, Hudgens MG, Edwards JK. "Fusing Observational Studies to Reduce
+Multiple Biases". *Submitted*. 2025.
+
 ### GCompMSM
 Zivich PN, Shook-Sa BE. "Estimating Marginal Structural Model Parameters for Time-Fixed, Binary Actions with
 g-computation and Estimating Equations" *American Journal of Epidemiology* 2025; In-Press.
 [![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39191643/)
 
 ### M-estimator_ICE
-Zivich PN, Ross RK, Shook-SA BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
+Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
 expectation g-computation". *Statistics in Medicine* 2024;43(29):5562-5572.
 [![PubMed](https://img.shields.io/badge/PubMed-39489722-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39489722/)
 
 ### MissingDataEpi
-Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-SA BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
+Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-Sa BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
 Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
 [![PubMed](https://img.shields.io/badge/PubMed-36222655-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/36222655/)
 
