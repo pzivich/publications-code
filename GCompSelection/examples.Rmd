@@ -1,0 +1,484 @@
+---
+title: "Constructing g-computation estimators: two case studies in selection bias"
+output:
+  html_document:
+    df_print: paged
+---
+
+R code illustrating the application of the proposed g-computation estimators to 
+a single data set in the context of the case studies described in the paper.
+
+Haidong Lu
+
+```{r package}
+library(data.table)
+library(geex)
+library(dplyr)
+```
+
+#Case 1: 
+##Standard g-computation
+With treatment-induced selection bias, standard g-computation is expected to be 
+biased, as detailed in the paper
+```{r}
+d <- fread("example1.csv")
+d[, AW := A * W]
+
+da1 <- copy(d)
+da1[, A := 1]
+da1[, AW := A * W]
+da0 <- copy(d)
+da0[, A := 0]
+da0[, AW := A * W]
+
+X <- as.matrix(d[, .(I, A, W, AW)])
+X1 <- as.matrix(da1[, .(I, A, W, AW)])
+X0 <- as.matrix(da0[, .(I, A, W, AW)])
+```
+
+
+```{r}
+inv_logit <- function(x) {
+  1 / (1 + exp(-x))
+}
+```
+
+```{r}
+data_df <- as.data.frame(cbind(
+  Y = d$Y,
+  S = d$S,
+  X,
+  X1_1 = X1[,1], X1_2 = X1[,2], X1_3 = X1[,3], X1_4 = X1[,4],
+  X0_1 = X0[,1], X0_2 = X0[,2], X0_3 = X0[,3], X0_4 = X0[,4]
+))
+```
+
+
+```{r}
+psi_sg <- function(data) {
+  function(theta) {
+    # Subset parameters for easier tracking in code later
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta <- theta[4:7]
+
+    y <- data$Y
+    s <- data$S
+    X <- as.matrix(data[, c("I", "A", "W", "AW")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3", "X1_4")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3", "X0_4")])
+    
+    # Outcome nuisance model
+    Xb <- as.vector(X %*% beta)
+    ee_out <- s * (y - inv_logit(Xb)) * X
+    
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    ee_r1 <- y1hat - r1
+    ee_r0 <- y0hat - r0
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_out))))
+  }
+}
+```
+
+
+```{r}
+init_vals <- c(0.0, 0.5, 0.5, 0, 0, 0, 0)
+
+result <- m_estimate(
+  estFUN = psi_sg,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+
+# calculate covariance
+vcov_mat <- vcov(result)
+se <- sqrt(diag(vcov_mat))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+
+cat("RD estimate:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+
+```
+
+##Modified g-computation
+
+```{r}
+psi_sg <- function(data) {
+  function(theta) {
+    # Subset parameters for easier tracking in code later
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta <- theta[4:7]
+
+    y <- data$Y
+    s <- data$S
+    a <- data$A
+    X <- as.matrix(data[, c("I", "A", "W", "AW")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3", "X1_4")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3", "X0_4")])
+    
+    # Outcome nuisance model
+    Xb <- as.vector(X %*% beta)
+    ee_out <- s * (y - inv_logit(Xb)) * X
+    
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    ee_r1 <- a * (y1hat - r1)
+    ee_r0 <- (1 - a) * (y0hat - r0)
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_out))))
+  }
+}
+```
+
+
+```{r}
+init_vals <- c(0.0, 0.5, 0.5, 0, 0, 0, 0)
+
+result <- m_estimate(
+  estFUN = psi_sg,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+
+# calculate covariance
+vcov_mat <- vcov(result)
+se <- sqrt(diag(vcov_mat))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+
+cat("RD estimate:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+
+```
+
+
+#Case 2: Confounding and Selection Bias
+##Standard g-computation: X-only
+```{r}
+d <- fread("example2.csv")
+
+da1 <- copy(d)
+da1[, A := 1]
+da0 <- copy(d)
+da0[, A := 0]
+
+X  <- as.matrix(d[, .(I, A, X)])
+X1 <- as.matrix(da1[, .(I, A, X)])
+X0 <- as.matrix(da0[, .(I, A, X)])
+```
+
+```{r}
+data_df <- as.data.frame(cbind(
+  Y = d$Y,
+  S = d$S,
+  X,
+  X1_1 = X1[,1], X1_2 = X1[,2], X1_3 = X1[,3],
+  X0_1 = X0[,1], X0_2 = X0[,2], X0_3 = X0[,3]
+))
+```
+
+```{r}
+psi_sg <- function(data) {
+  function(theta) {
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta <- theta[4:6]
+
+    y <- data$Y; s <- data$S
+    X <- as.matrix(data[, c("I", "A", "X")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3")])
+    
+    Xb <- as.vector(X %*% beta)
+    ee_out <- s * (y - inv_logit(Xb)) * X
+    
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    ee_r1 <- y1hat - r1
+    ee_r0 <- y0hat - r0
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_out))))
+  }
+}
+```
+
+```{r}
+init_vals <- c(0., 0.5, 0.5, 0., 0., 0.)
+result <- m_estimate(
+  estFUN = psi_sg,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+se <- sqrt(diag(vcov(result)))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+cat("Standard g-computation: X-only\n")
+cat("RD:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+```
+
+##Standard g-computation: Z-only
+```{r}
+d <- fread("example2.csv")
+
+da1 <- copy(d)
+da1[, A := 1]
+da0 <- copy(d)
+da0[, A := 0]
+
+X  <- as.matrix(d[, .(I, A, Z)])
+X1 <- as.matrix(da1[, .(I, A, Z)])
+X0 <- as.matrix(da0[, .(I, A, Z)])
+```
+
+```{r}
+data_df <- as.data.frame(cbind(
+  Y = d$Y,
+  S = d$S,
+  X,
+  X1_1 = X1[,1], X1_2 = X1[,2], X1_3 = X1[,3],
+  X0_1 = X0[,1], X0_2 = X0[,2], X0_3 = X0[,3]
+))
+```
+
+```{r}
+psi_sg <- function(data) {
+  function(theta) {
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta <- theta[4:6]
+
+    y <- data$Y; s <- data$S
+    X <- as.matrix(data[, c("I", "A", "Z")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3")])
+    
+    Xb <- as.vector(X %*% beta)
+    ee_out <- s * (y - inv_logit(Xb)) * X
+    
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    ee_r1 <- y1hat - r1
+    ee_r0 <- y0hat - r0
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_out))))
+  }
+}
+```
+
+```{r}
+init_vals <- c(0., 0.5, 0.5, 0., 0., 0.)
+result <- m_estimate(
+  estFUN = psi_sg,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+se <- sqrt(diag(vcov(result)))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+cat("Standard g-computation: Z-only\n")
+cat("RD:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+```
+
+##Standard g-computation: X & Z
+```{r}
+d <- fread("example2.csv")
+
+da1 <- copy(d)
+da1[, A := 1]
+da0 <- copy(d)
+da0[, A := 0]
+
+X  <- as.matrix(d[, .(I, A, X, Z)])
+X1 <- as.matrix(da1[, .(I, A, X, Z)])
+X0 <- as.matrix(da0[, .(I, A, X, Z)])
+```
+
+```{r}
+data_df <- as.data.frame(cbind(
+  Y = d$Y,
+  S = d$S,
+  X,
+  X1_1 = X1[,1], X1_2 = X1[,2], X1_3 = X1[,3], X1_4 = X1[,4],
+  X0_1 = X0[,1], X0_2 = X0[,2], X0_3 = X0[,3], X0_4 = X0[,4]
+))
+```
+
+```{r}
+psi_sg <- function(data) {
+  function(theta) {
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta <- theta[4:7]
+
+    y <- data$Y; s <- data$S
+    X <- as.matrix(data[, c("I", "A", "X", "Z")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3", "X1_4")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3", "X0_4")])
+    
+    Xb <- as.vector(X %*% beta)
+    ee_out <- s * (y - inv_logit(Xb)) * X
+    
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    ee_r1 <- y1hat - r1
+    ee_r0 <- y0hat - r0
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_out))))
+  }
+}
+```
+
+```{r}
+init_vals <- c(0., 0.5, 0.5, 0., 0., 0., 0.)
+result <- m_estimate(
+  estFUN = psi_sg,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+se <- sqrt(diag(vcov(result)))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+cat("Standard g-computation: X + Z\n")
+cat("RD:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+```
+
+##Nested g-computation
+
+```{r}
+d <- fread("example2.csv")
+
+da1 <- copy(d)
+da1[, A := 1]
+da0 <- copy(d)
+da0[, A := 0]
+
+X  <- as.matrix(d[, .(I, A, X, Z)])
+X1 <- as.matrix(da1[, .(I, A, X, Z)])
+X0 <- as.matrix(da0[, .(I, A, X, Z)])
+
+W  <- as.matrix(d[, .(I, A, Z)])
+W1 <- as.matrix(da1[, .(I, A, Z)])
+W0 <- as.matrix(da0[, .(I, A, Z)])
+```
+
+
+```{r}
+data_df <- as.data.frame(cbind(
+  Y = d$Y, S = d$S,
+  X, W,
+  X1_1 = X1[,1], X1_2 = X1[,2], X1_3 = X1[,3], X1_4 = X1[,4],
+  X0_1 = X0[,1], X0_2 = X0[,2], X0_3 = X0[,3], X0_4 = X0[,4],
+  W1_1 = W1[,1], W1_2 = W1[,2], W1_3 = W1[,3],
+  W0_1 = W0[,1], W0_2 = W0[,2], W0_3 = W0[,3]
+))
+```
+
+
+```{r}
+psi_gcomp_nested <- function(data) {
+  function(theta) {
+    pX <- 4
+    pW <- 3
+
+    rd <- theta[1]
+    r1 <- theta[2]
+    r0 <- theta[3]
+    beta     <- theta[4:(3+pX)]
+    gamma_1  <- theta[(4+pX):(3+pX+pW)]
+    gamma_0  <- theta[(4+pX+pW):(3+pX+2*pW)]
+
+    y <- data$Y
+    s <- data$S
+
+    X  <- as.matrix(data[, c("I", "A", "X", "Z")])
+    X1 <- as.matrix(data[, c("X1_1", "X1_2", "X1_3", "X1_4")])
+    X0 <- as.matrix(data[, c("X0_1", "X0_2", "X0_3", "X0_4")])
+
+    W  <- as.matrix(data[, c("I", "A", "Z")])
+    W1 <- as.matrix(data[, c("W1_1", "W1_2", "W1_3")])
+    W0 <- as.matrix(data[, c("W0_1", "W0_2", "W0_3")])
+
+    # Inner model: E[Y | A, X, Z], fit only when S == 1
+    Xb <- as.vector(X %*% beta)
+    ee_inner <- s * (y - inv_logit(Xb)) * X
+
+    y1hat <- inv_logit(as.vector(X1 %*% beta))
+    y0hat <- inv_logit(as.vector(X0 %*% beta))
+
+    # Outer model: E[Y1 | Z], E[Y0 | Z]
+    ee_outer1 <- (y1hat - inv_logit(as.vector(W %*% gamma_1))) * W
+    ee_outer0 <- (y0hat - inv_logit(as.vector(W %*% gamma_0))) * W
+
+    y1_outer <- inv_logit(as.vector(W1 %*% gamma_1))
+    y0_outer <- inv_logit(as.vector(W0 %*% gamma_0))
+
+    # Risk functions
+    ee_r1 <- y1_outer - r1
+    ee_r0 <- y0_outer - r0
+    ee_rd <- rep(r1 - r0 - rd, length(y))
+
+    return(c(ee_rd, ee_r1, ee_r0, as.vector(t(ee_inner)), as.vector(t(ee_outer1)), as.vector(t(ee_outer0))))
+  }
+}
+```
+
+
+```{r}
+init_vals <- c(0., 0.5, 0.5, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.)
+
+result <- m_estimate(
+  estFUN = psi_gcomp_nested,
+  data = data_df,
+  root_control = setup_root_control(start = init_vals)
+)
+
+estimates <- coef(result)
+se <- sqrt(diag(vcov(result)))
+lower <- estimates - 1.96 * se
+upper <- estimates + 1.96 * se
+
+cat("Nested g-computation\n")
+cat("RD:", estimates[1], "\n")
+cat("95% CI: [", lower[1], ", ", upper[1], "]\n")
+
+```
+
+
+
