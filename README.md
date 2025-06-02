@@ -34,7 +34,7 @@ Multiple Biases". *Submitted*. 2025.
 
 ### GCompMSM
 Zivich PN, Shook-Sa BE. "Estimating Marginal Structural Model Parameters for Time-Fixed, Binary Actions with
-g-computation and Estimating Equations" *American Journal of Epidemiology* 2025; In-Press.
+g-computation and Estimating Equations" *American Journal of Epidemiology* 2025;194(5):1464–1466.
 [![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39191643/)
 
 ### GCompSelection
