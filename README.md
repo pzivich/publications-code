@@ -37,6 +37,9 @@ Zivich PN, Shook-Sa BE. "Estimating Marginal Structural Model Parameters for Tim
 g-computation and Estimating Equations" *American Journal of Epidemiology* 2025; In-Press.
 [![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39191643/)
 
+### GCompSelection
+Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". 2025; Submitted.
+
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
 expectation g-computation". *Statistics in Medicine* 2024;43(29):5562-5572.
