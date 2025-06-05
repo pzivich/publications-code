@@ -38,7 +38,8 @@ g-computation and Estimating Equations" *American Journal of Epidemiology* 2025;
 [![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39191643/)
 
 ### GCompSelection
-Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". 2025; Submitted.
+Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". *Submitted*.
+[![arXiv](https://img.shields.io/badge/arXiv-2506.03347-b31b1b.svg)](https://arxiv.org/abs/2506.03347)
 
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
@@ -56,7 +57,7 @@ Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemio
 
 ### PooledLogitEE
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
-logistic regression". *Submitted* 2025.
+logistic regression". *Submitted*.
 [![arXiv](https://img.shields.io/badge/arXiv-2504.13291-b31b1b.svg)](https://arxiv.org/abs/2504.13291)
 
 ### PooledTestingSARS2
