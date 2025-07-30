@@ -1,6 +1,6 @@
 # Publicly Available Code
 
-This repository is a collection of publicly available code from my past publications. This repository is for
+This repository is a collection of publicly available code from my publications. This repository is for
 long-term storage and future reference. In addition to GitHub, all code is stored on Zenodo at the following DOI
 
 [![DOI](https://zenodo.org/badge/258263929.svg)](https://zenodo.org/badge/latestdoi/258263929)
@@ -41,6 +41,10 @@ g-computation and Estimating Equations" *American Journal of Epidemiology* 2025;
 Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". *Submitted*.
 [![arXiv](https://img.shields.io/badge/arXiv-2506.03347-b31b1b.svg)](https://arxiv.org/abs/2506.03347)
 
+### ImprovedPooledLogit
+Zivich PN, Klose M, DeMonte JB, Shook-Sa BE, Cole SR, Edwards JK. "An Improved Pooled Logistic Regression
+Implementation". *Submitted*.
+
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
 expectation g-computation". *Statistics in Medicine* 2024;43(29):5562-5572.
@@ -54,6 +58,10 @@ Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
 ### NeuralNetworkPrimer
 Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemiology* 2025; In-Press.
 [![PubMed](https://img.shields.io/badge/PubMed-39358996-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39358996/)
+
+### PerProtocolBounds
+Zivich PN, Edwards JK, Lucas VA, Shook-Sa BE, Brookhart MA, Cole SR. "Estimating Per-Protocol Effects with Fewer
+Assumptions Using Nonparametric Bounds". *Submitted*.
 
 ### PooledLogitEE
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
