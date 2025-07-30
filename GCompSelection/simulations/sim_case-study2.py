@@ -7,13 +7,13 @@ import pandas as pd
 from delicatessen import MEstimator
 
 from dgm import dgm_example2
-from estfun import psi_standard_gcomp, psi_gcomp_nested
+from estfun import psi_standard_gcomp, psi_gcomp_nested, psi_ipw_case2
 from postprocess import sim_results_table
 
 ############################################################
 # Hyperparameters for simulation
 
-n_runs = 500
+n_runs = 5000
 n_sample = 1000
 np.random.seed(7777777)
 
@@ -21,7 +21,6 @@ np.random.seed(7777777)
 # Truth calculation
 
 dt = dgm_example2(n=1000000, truth=True)
-print(dt[['X', 'Z', 'S', 'Y']].describe())
 a = np.asarray(dt['A'])
 y = np.asarray(dt['Y'])
 
@@ -36,7 +35,7 @@ def psi_cc(theta):
 estr = MEstimator(psi_cc, init=[0., 0.5, 0.5])
 estr.estimate()
 truth = estr.theta[0]
-print(truth)
+print("Truth:", truth)
 
 ############################################################
 # Simulations
@@ -46,12 +45,12 @@ results = pd.DataFrame(columns=['bias_cc', 'se_cc', 'cover_cc',
                                 'bias_gx', 'se_gx', 'cover_gx',
                                 'bias_gs', 'se_gs', 'cover_gs',
                                 'bias_ng', 'se_ng', 'cover_ng',
+                                'bias_w', 'se_w', 'cover_w',
                                 ])
 
 for i in range(n_runs):
     # Generating sample data
     d = dgm_example2(n=n_sample, truth=False)
-    # print(d[['X', 'Z', 'A', 'S', 'Y']].describe())
     d['AZ'] = d['A'] * d['Z']
     d['AX'] = d['A'] * d['X']
     d['AXZ'] = d['A'] * d['X'] * d['Z']
@@ -147,6 +146,22 @@ for i in range(n_runs):
     else:
         row.append(0)
 
+    # IPW
+    def psi_w(theta):
+        return psi_ipw_case2(theta=theta, y=d['Y'], a=d['A'], s=d['S'],
+                             W=d[['I', 'X']], Z=d[['I', 'Z']])
+
+    inits = [0., 0.5, 0.5, 0., 0., 0., 0.]
+    estr = MEstimator(psi_w, init=inits)
+    estr.estimate()
+    ci = estr.confidence_intervals()
+    row.append(estr.theta[0] - truth)
+    row.append(estr.variance[0, 0]**0.5)
+    if ci[0, 0] < truth < ci[0, 1]:
+        row.append(1)
+    else:
+        row.append(0)
+
     # Stacking Results to Output
     results.loc[len(results.index)] = row
 
@@ -154,8 +169,21 @@ for i in range(n_runs):
 ############################################################
 # Results
 
-table = sim_results_table(results, estimators=['CC', 'Z-only', 'X-only', 'X,Z', 'Nested'],
-                          bias=['bias_cc', 'bias_gz', 'bias_gx', 'bias_gs', 'bias_ng'],
-                          se=['se_cc', 'se_gz', 'se_gx', 'se_gs', 'se_ng'],
-                          coverage=['cover_cc', 'cover_gz', 'cover_gx', 'cover_gs', 'cover_ng'])
+table = sim_results_table(results, estimators=['Complete-case', 'Z-only', 'X-only', 'X,Z', 'Nested', 'IPW'],
+                          bias=['bias_cc', 'bias_gz', 'bias_gx', 'bias_gs', 'bias_ng', 'bias_w'],
+                          se=['se_cc', 'se_gz', 'se_gx', 'se_gs', 'se_ng', 'se_w'],
+                          coverage=['cover_cc', 'cover_gz', 'cover_gx', 'cover_gs', 'cover_ng', 'cover_w'])
 print(table.round(3))
+
+# 29/07/2025
+#
+# Truth: -0.2048799822473868
+#
+#                 bias    ese   rmse    ser  coverage
+# estimator
+# Complete-case  0.037  0.034  0.050  1.008     0.000
+# Z-only         0.025  0.033  0.041  1.005     0.896
+# X-only         0.042  0.039  0.058  1.002     0.833
+# X,Z            0.029  0.038  0.047  1.000     0.897
+# Nested         0.004  0.036  0.036  1.004     0.950
+# IPW           -0.000  0.038  0.038  1.003     0.949

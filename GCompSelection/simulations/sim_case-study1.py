@@ -8,7 +8,7 @@ from delicatessen import MEstimator
 from delicatessen.estimating_equations import ee_glm
 
 from dgm import dgm_example1
-from estfun import psi_standard_gcomp, psi_gcomp_conditional
+from estfun import psi_standard_gcomp, psi_gcomp_conditional, psi_ipw_case1
 from postprocess import sim_results_table
 
 ############################################################
@@ -35,7 +35,7 @@ def psi_cc(theta):
 estr = MEstimator(psi_cc, init=[0.5, -0.2])
 estr.estimate()
 truth = estr.theta[1]
-print(truth)
+print("Truth:", truth)
 
 ############################################################
 # Simulations
@@ -43,6 +43,7 @@ print(truth)
 results = pd.DataFrame(columns=['bias_cc', 'se_cc', 'cover_cc',
                                 'bias_sg', 'se_sg', 'cover_sg',
                                 'bias_pg', 'se_pg', 'cover_pg',
+                                'bias_w', 'se_w', 'cover_w',
                                 ])
 
 for i in range(n_runs):
@@ -106,14 +107,40 @@ for i in range(n_runs):
     else:
         row.append(0)
 
+    # IPW estimator for comparison
+    def psi_w(theta):
+        return psi_ipw_case1(theta=theta, y=d['Y'], a=d['A'], s=d['S'], W=d[['I', 'W']])
+
+    inits = [0., 0.5, 0.5, 0., 0.]
+    estr = MEstimator(psi_w, init=inits)
+    estr.estimate()
+    ci = estr.confidence_intervals()
+    row.append(estr.theta[0] - truth)
+    row.append(estr.variance[0, 0]**0.5)
+    if ci[0, 0] < truth < ci[0, 1]:
+        row.append(1)
+    else:
+        row.append(0)
+
     # Stacking Results to Output
     results.loc[len(results.index)] = row
 
 ############################################################
 # Results
 
-table = sim_results_table(results, estimators=['Complete-case', 'Standard', 'Proposed'],
-                          bias=['bias_cc', 'bias_sg', 'bias_pg'],
-                          se=['se_cc', 'se_sg', 'se_pg'],
-                          coverage=['cover_cc', 'cover_sg', 'cover_pg'])
+table = sim_results_table(results, estimators=['Complete-case', 'Standard', 'Proposed', 'IPW'],
+                          bias=['bias_cc', 'bias_sg', 'bias_pg', 'bias_w'],
+                          se=['se_cc', 'se_sg', 'se_pg', 'se_w'],
+                          coverage=['cover_cc', 'cover_sg', 'cover_pg', 'cover_w'])
 print(table.round(3))
+
+# 29/07/2025
+#
+# Truth: -0.2187490843993552
+#
+#                 bias    ese   rmse    ser  coverage
+# estimator
+# Complete-case -0.028  0.035  0.045  1.002     0.866
+# Standard      -0.144  0.035  0.148  0.999     0.020
+# Proposed      -0.001  0.036  0.036  1.008     0.952
+# IPW           -0.001  0.039  0.039  1.004     0.950

@@ -93,3 +93,60 @@ def psi_gcomp_nested(theta, y, s, X, X1, X0, W, W1, W0):
     ee_rd = np.ones(y.shape) * (r1 - r0 - rd)
 
     return np.vstack([ee_rd, ee_r1, ee_r0, ee_inner, ee_outer1, ee_outer0])
+
+
+def psi_ipw_case1(theta, y, a, s, W):
+    W = np.asarray(W)
+    y = np.asarray(y)
+    s = np.asarray(s)
+
+    rd, r1, r0 = theta[0:3]
+    alpha = theta[3:]
+
+    # Nuisance model for weights
+    ee_log = ee_regression(alpha, y=s, X=W, model='logistic')
+
+    # Computing the weights
+    pi_s = inverse_logit(np.dot(W, alpha))
+    ipw = s / pi_s
+
+    # Weighted means for risk functions
+    ee_r1 = a * ipw * (y - r1)
+    ee_r0 = (1-a) * ipw * (y - r0)
+    ee_rd = np.ones(y.shape) * (r1 - r0 - rd)
+
+    return np.vstack([ee_rd, ee_r1, ee_r0, ee_log])
+
+
+def psi_ipw_case2(theta, y, a, s, W, Z):
+    W = np.asarray(W)
+    Z = np.asarray(Z)
+    y = np.asarray(y)
+    s = np.asarray(s)
+
+    idW = 3 + W.shape[1]
+
+    rd, r1, r0 = theta[0:3]
+    alpha = theta[3:idW]
+    gamma = theta[idW:]
+
+    # Nuisance model for selection
+    ee_slc = ee_regression(alpha, y=s, X=W, model='logistic')
+
+    # Nuisance model for confounding
+    ee_act = ee_regression(gamma, y=a, X=Z, model='logistic')
+
+    # Computing the weights
+    pi_s = inverse_logit(np.dot(W, alpha))
+    pi_a = inverse_logit(np.dot(Z, gamma))
+    ipmw = s / pi_s
+    iptw = a / pi_a + (1-a)/(1-pi_a)
+    ipw = ipmw * iptw
+
+    # Weighted means for risk functions
+    ee_r1 = a * ipw * (y - r1)
+    ee_r0 = (1-a) * ipw * (y - r0)
+    ee_rd = np.ones(y.shape) * (r1 - r0 - rd)
+
+    return np.vstack([ee_rd, ee_r1, ee_r0, ee_slc, ee_act])
+
