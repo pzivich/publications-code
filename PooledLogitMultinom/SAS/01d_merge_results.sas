@@ -1,0 +1,101 @@
+*********************************************************************                                                                    
+*  Title:         01d_merge_results.sas
+*  Date:          08/06/2025
+*  Author:        Lucas Neuroth 
+*------------------------------------------------------------------- 
+*  Purpose: Create skeleton of times to align results from each  
+*           approach, merge together.                                                                
+********************************************************************;
+
+* Raw time units;
+data time_raw;
+	do i = 0 to 731;
+	t_days = i;
+	t_weeks = ceil(t_days/7);
+	t_months = ceil(t_days/30.44);
+	* indicating discretized timescale;
+	timescale = &timescale.;
+	output;
+	end;
+run;
+* Maximum day for each week (i.e. when weekly risks should tick up);
+proc summary data=time_raw ;
+   by t_weeks;
+   var t_days;
+   output out=weeks (drop=_:) max= ;
+run;
+* Maximum day for each month (i.e. when monthly risks should tick up);
+proc summary data=time_raw ;
+   by t_months;
+   var t_days;
+   output out=months (drop=_:) max= ;
+run;
+* Merging weeks;
+data time;
+	merge time_raw (drop=i t_months t_weeks) weeks;
+	by t_days;
+run;
+* Merging months;
+data time;
+	merge time months;
+	by t_days;
+	array time [*] t_:;
+	call symputx('col',dim(time)); 
+run;
+* Downfilling times;
+data times;
+	set time;
+	array time [*] t_:;
+	array temp [&col.]; 
+	retain temp;
+	do i=1 to dim(time);
+		if not missing(time[i]) then temp[i]=time[i];
+		time[i] = temp[i];
+	end;
+	* Discretized time variable for merging;
+	if timescale = 'days' then t_out = t_days;
+	else if timescale = 'weeks' then t_out = t_weeks;
+	else if timescale = 'months' then t_out = t_months;
+	drop i temp:;
+run;
+
+* Merging in Aalen-Johansen results;	
+data results;
+	merge times results_aj;
+	by t_days;
+run;
+* Merging in multiple pooled logit results;
+data results;
+	merge results results_multi;
+	by t_out;
+run;
+* Merging in multinomial pooled logit results;
+data results;
+	merge results results_multinomial;
+	by t_out;
+	array surv [*] surv:;
+	array risk [*] r:;
+	* Fill in 1 for first row if no events occured;
+	do i=1 to dim(surv);
+		if _N_ = 1 and surv[i]=. then surv[i]=1;
+	end;
+	* Fill in 0 for first row if no events occured;
+	do i=1 to dim(risk);
+		if _N_ = 1 and risk[i]=. then risk[i]=0;
+	end;
+	drop t_out i;
+	call symputx('col',dim(surv)+dim(risk)); * number of columns for down-filling;
+run;
+* Downfilling risk/survival;
+data results;
+	set results;
+	where t_days<=730;
+	array estimates [*] surv: r:;
+	array temp [&col.]; 
+	retain temp;
+	do i=1 to dim(estimates);
+		if not missing(estimates[i]) then temp[i]=estimates[i];
+		estimates[i] = temp[i];
+	end;
+	drop i temp1--temp&col.; * removing temp variables from down fill;
+run;

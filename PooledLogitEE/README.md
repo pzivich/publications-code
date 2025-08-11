@@ -53,6 +53,6 @@ pandas:       1.4.1
 SciPy:        1.11.2
 delicatessen: 3.0
 matplotlib:   3.9.2
-lifeslines:   0.27.3
+lifelines:   0.27.3
 statsmodels:  0.14.1
 ```
