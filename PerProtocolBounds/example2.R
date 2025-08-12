@@ -3,6 +3,7 @@
 
 # set up environment ----
 library(tidyverse)
+library(survival)
 source <- "path/to/file"
 
 # read in data ----

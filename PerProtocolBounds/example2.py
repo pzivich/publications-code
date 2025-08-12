@@ -218,7 +218,7 @@ axs[1].set_xlabel("Risk Difference")
 axs[1].set_yticks([0, 50, 100, 150, 200, 250, 300, 365])
 
 plt.tight_layout()
-plt.savefig("Figure1.png", format='png', dpi=300)
+# plt.savefig("Figure1.png", format='png', dpi=300)
 plt.show()
 
 # plt.fill_between(bounds.index, bounds['RiskRatio_x'], bounds['RiskRatio_y'], color='k')
