@@ -23,6 +23,11 @@ Zivich PN. "Invited Commentary: The Seedy Side of Causal Effect Estimation with 
 2024;35(6):787-790.
 [![PubMed](https://img.shields.io/badge/PubMed-39150866-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39150866/)
 
+### ConfRegions
+Zivich PN, Cole SR, Greifer N, Montoya LM, Kosorok MR, Edwards JK. "Confidence Regions for Multiple Outcomes, Effect
+Modifiers, and Other Multiple Comparisons". *Submitted*.
+[![arXiv](https://img.shields.io/badge/arXiv-2510.07076-b31b1b.svg)](https://https://arxiv.org/abs/2510.07076)
+
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
 2021;32(3):393-401.
@@ -38,7 +43,7 @@ g-computation and Estimating Equations" *American Journal of Epidemiology* 2025;
 [![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39191643/)
 
 ### GCompSelection
-Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". *Submitted*.
+Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". *Epidemiology*
 [![arXiv](https://img.shields.io/badge/arXiv-2506.03347-b31b1b.svg)](https://arxiv.org/abs/2506.03347)
 
 ### ImprovedPooledLogit
