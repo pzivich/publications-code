@@ -32,6 +32,6 @@ Python: 3.9.4
   delicatessen (3.0)
 
 R: 4.4.1
-- Dependencies (version): tidyverse (), rootSolve ()
+- Dependencies (version): tidyverse (2.0.0), rootSolve (1.8.2.4)
 
 SAS: 9.4
