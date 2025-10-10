@@ -107,8 +107,7 @@ plt.ylim([65, 150])
 plt.ylabel("Systolic Blood Pressure (mm Hg)")
 plt.xlabel("Age (years)")
 plt.tight_layout()
-plt.savefig("diagnostic_plot1.png", format='png', dpi=300)
-plt.close()
+plt.show()
 
 
 ###############################################################################################
@@ -175,6 +174,5 @@ plt.xticks([8, 10, 12, 14, 16])
 plt.xlim([7, 18])
 plt.ylabel("Difference Between Models")
 plt.xlabel("Age (years)")
-plt.savefig("diagnostic_plot2.png", format='png', dpi=300)
 plt.tight_layout()
-plt.close()
+plt.show()

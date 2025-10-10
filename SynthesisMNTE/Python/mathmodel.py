@@ -23,12 +23,13 @@ class MathModel:
         # Height cut-points for the distributions used, stratified by gender, age
         columns = ['p5', 'p10', 'p25', 'p50', 'p75', 'p90', 'p95']
         dh = pd.read_csv(filepath+"height_params.csv")
-        self.height_cuts = {}
-        for i, row in dh.iterrows():
-            cuts = {}
-            for ci in range(1, 7):
-                cuts[ci] = (row[columns[ci]] + row[columns[ci-1]]) / 2
-            self.height_cuts[row['code']] = cuts
+        self.height_cuts = dh
+        # self.height_cuts = {}
+        # for i, row in dh.iterrows():
+        #     cuts = {}
+        #     for ci in range(1, 7):
+        #         cuts[ci] = (row[columns[ci]] + row[columns[ci-1]]) / 2
+        #     self.height_cuts[row['code']] = cuts
 
         # Median, 90th percentiles for each gender, age, height combination
         dbp = pd.read_csv(filepath+"sbp_params.csv")
@@ -68,18 +69,19 @@ class MathModel:
         code = code + str(age)
 
         # Height code
-        height_vals = self.height_cuts[code]  # Pulling the height cut-points for the given gender, age
-        if height < height_vals[1]:           # Adding height indicator based on which interval height is within
+        height_vals = self.height_cuts.loc[self.height_cuts['code'] == code]
+        height_vals = np.asarray(height_vals[['c1', 'c2', 'c3', 'c4', 'c5', 'c6']])[0]
+        if height < height_vals[0]:           # Adding height indicator based on which interval height is within
             code = code + 'h1'
-        elif height < height_vals[2]:
+        elif height < height_vals[1]:
             code = code + 'h2'
-        elif height < height_vals[3]:
+        elif height < height_vals[2]:
             code = code + 'h3'
-        elif height < height_vals[4]:
+        elif height < height_vals[3]:
             code = code + 'h4'
-        elif height < height_vals[5]:
+        elif height < height_vals[4]:
             code = code + 'h5'
-        elif height < height_vals[6]:
+        elif height < height_vals[5]:
             code = code + 'h6'
         else:
             code = code + 'h7'

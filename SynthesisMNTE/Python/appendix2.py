@@ -1,8 +1,8 @@
 #####################################################################################################################
 # Using a Synthesis of Statistical and Mathematical Models to Account for Missing Data in Public Health Research
-#   This file runs the analysis reported in the main paper.
+#   This file runs the parametric model analysis reported in Appendix 2.
 #
-# Paul Zivich (2024/10/15)
+# Paul Zivich (2025/10/9)
 #####################################################################################################################
 
 ###############################################
@@ -10,49 +10,31 @@
 
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 from delicatessen import MEstimator
 from delicatessen.estimating_equations import ee_regression
-from delicatessen.utilities import regression_predictions
+from formulaic import model_matrix
 
 from mathmodel import MathModel
 
-np.random.seed(905141)
+np.random.seed(6905141)
 
 ###############################################
 # Setting up data
 
 d = pd.read_csv("../data/nhanes.csv")
-d = d.dropna(subset=['height', ])
+d = d.dropna(subset=['height', 'weight'])
 d['height'] = d['height'] / 2.54
 d['intercept'] = 1
 
-
-###############################################
-# Complete-case analysis
-
-dr = d.loc[d['sbp'].notnull()].copy()    # Restricting data to complete-cases
-y = np.asarray(dr['sbp'])                # Converting outcome column in NumPy array
-
-
-def psi(theta):
-    # Estimating function for the complete-case mean
-    mu = theta[0]
-    ee_mean = dr['sample_weight']*(y - mu)
-    return ee_mean
-
-
-# Computing the M-estimator
-estr = MEstimator(psi, init=[100., ])
-estr.estimate()
-
-print("Complete-case")
-print(estr.theta[0])
-print(estr.confidence_intervals()[0, :])
-print("")
-
+model = "female*(age + age_sp1 + age_sp2 + height + h_sp1 + h_sp2 + weight + w_sp1 + w_sp2)"
 
 ###############################################
 # Extrapolation
+
+X = model_matrix(model, d)
+
 
 def psi(theta):
     # Estimating function for the extrapolation mean
@@ -61,24 +43,23 @@ def psi(theta):
     r = np.where(d['sbp'].isna(), 0, 1)                     # Indicator if the outcome was observed
     y_no_miss = np.where(r == 1, d['sbp'], -9999)           # Replacing NaN with -9999 to avoid NaN-related deli errors
     ee_reg = ee_regression(beta,                            # Estimating functions for a regression model of
-                           X=d[['intercept', 'age']],       # ... linear model for age
+                           X=X,                             # ... parametric model for age, gender, weight, height
                            y=y_no_miss,                     # ... on outcomes where NaN was replaced
                            model='linear',                  # ... using linear regression
                            weights=d['sample_weight']) * r  # ... using sample weights and among complete-cases only
-    yhat = np.dot(d[['intercept', 'age']], beta)            # Compute the predicted Y values for all obs
+    yhat = np.dot(X, beta)                                  # Compute the predicted Y values for all obs
     ee_mean = d['sample_weight']*(yhat - mu)                # Compute the weighted mean of the predicted Y values
     return np.vstack([ee_mean, ee_reg])                     # Returning stacked estimating equations
 
 
 # Computing the M-estimator
-estr = MEstimator(psi, init=[100., 100., 0.])
+estr = MEstimator(psi, init=[100., 100., ] + [0., ]*(X.shape[1] - 1))
 estr.estimate()
 
 print("Extrapolation")
 print(estr.theta[0])
 print(estr.confidence_intervals()[0, :])
 print("")
-
 
 ###############################################
 # Synthesis approach
@@ -95,29 +76,10 @@ for i in range(10000):
     dx1 = ds.loc[ds['age'] >= 8].copy()                   # Subset resampled data to positive region
 
     # Statistical model
-    reg_cols = []                                         # Storage for new regression column names
-    for j in [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]:      # For each unique age in the positive region
-        age_label = 'age' + str(j)                        # ... create a new column label
-        reg_cols.append(age_label)                        # ... add column label to the running list
-        dx1[age_label] = np.where(dx1['age'] == j, 1, 0)  # ... create indicator variable for that specific age
-
-    def psi(theta):
-        # Estimating function for statistical nuisance model
-        r = np.where(dx1['sbp'].isna(), 0, 1)                   # Indicator if the outcome was observed
-        y_no_miss = np.where(r == 1, dx1['sbp'], -9999)         # Replacing NaN with -9999 to avoid NaN-related errors
-        return ee_regression(theta,                             # Estimating functions for a regression model of
-                             X=dx1[reg_cols],                   # ... indicator terms for age
-                             y=y_no_miss,                       # ... on outcomes where NaN was replaced
-                             model='linear',                    # ... using linear regression
-                             weights=dx1['sample_weight']) * r  # ... using sample weights and among complete-cases only
-
-    # Computing M-estimator
-    estr = MEstimator(psi, init=[100., ]*len(reg_cols))
-    estr.estimate()
-
-    # Short-cut deli function to get predicted SBP values from the model estimates
-    preds = regression_predictions(X=dx1[reg_cols], theta=estr.theta, covariance=estr.variance)
-    dx1['sbp-hat'] = preds[:, 0]      # Predicted Y for the positive region
+    fam = sm.families.Gaussian()                                       # GLM specification
+    fm = smf.glm("sbp ~ " + model, data=dx1, family=fam,               # Fitting GLM
+                 freq_weights=dx1['sample_weight']).fit()              # ... with sampling weights
+    dx1['sbp-hat'] = fm.predict(dx1)                                   # Predictions for positive observations
 
     # Mathematical model
     math_model = MathModel()                                           # Initialize the mathematical model class
@@ -146,14 +108,10 @@ print("")
 
 # Output: 2025/10/10
 # --------------------------------------------------------------------------------------------------------------
-# Complete-case
-# 104.72203263097508
-# [104.11666427 105.32740099]
-#
 # Extrapolation
-# 101.57597868021931
-# [100.78515856 102.3667988 ]
+# 100.75309436224524
+# [ 97.68020429 103.82598443]
 #
 # Synthesis
-# 100.48765980889932
-# [ 99.94526258 101.02284028]
+# 100.47782995370578
+# [ 99.94159392 101.00961065]
