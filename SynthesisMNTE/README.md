@@ -23,8 +23,10 @@
 
 `R/`
 - `analysis.py`: Runs the main analyses reported in the main paper
+- `appendix2.py`: Runs the parametric statistical model for the example described in the Appendix
+- `appendix3.py`: Runs the AIPW estimator for the example described in the Appendix
+- `bounds.py`: Runs the positivity bounds for the example
 - `diagnostic.py`: Runs the diagnostic procedure for the example
-# TODO appendix2, appendix3, bounds
 
 --------------------------------
 
