@@ -1,5 +1,5 @@
 #####################################################################################################################
-# Using a Synthesis of Statistical and Mathematical Models to Account for Missing Data in Public Health Research
+# Accounting for Missing Data in Public Health Research Using a Synthesis of Statistical and Mathematical Models
 #   This file runs the diagnostic based on the mathematical model predictions for the positive region.
 #
 # Paul Zivich (2024/12/17)

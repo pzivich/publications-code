@@ -1,5 +1,5 @@
 #####################################################################################################################
-# Using a Synthesis of Statistical and Mathematical Models to Account for Missing Data in Public Health Research
+# Accounting for Missing Data in Public Health Research Using a Synthesis of Statistical and Mathematical Models
 #   This file runs the parametric model analysis reported in Appendix 2.
 #
 # Paul Zivich (2025/10/9)

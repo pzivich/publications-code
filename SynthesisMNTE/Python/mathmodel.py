@@ -1,5 +1,5 @@
 #####################################################################################################################
-# Using a Synthesis of Statistical and Mathematical Models to Account for Missing Data in Public Health Research
+# Accounting for Missing Data in Public Health Research Using a Synthesis of Statistical and Mathematical Models
 #   This file provides a class object used to simulate SBP values for those in the non-positive region. There
 #   are alterantive ways to implement this procedure. This is simply one implementation (note: it could be made
 #   much more efficient).
