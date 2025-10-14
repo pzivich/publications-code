@@ -10,7 +10,7 @@ library(dplyr)
 ###### Bring in NHANES data and add indicator for those 2-7
 nhanes <- read.csv("nhanes.csv")
 nhanes$agelt8 <- ifelse(nhanes$age<8, 1, 0)
-
+nhanes$height <- nhanes$height / 2.54
 
 ##########################################################
 ##### Complete case analysis, mean SPB
@@ -112,8 +112,7 @@ sbp_params <- within(sbp_params, rm("code"))
 #first, add height cutoffs to the dataset
 nhanes$gender <- ifelse(nhanes$female==1, 'f', 'm')
 nhanes2 <- join(nhanes, height.params, by=c("gender", "age"))
-nhanes2$height <- nhanes2$height / 2.54
-nhanes2$height_cat <- ifelse(nhanes2$height<nhanes2$c1,
+nhanes2$height_cat <- ifelse(nhanes2$height < nhanes2$c1,
                              1,
                              ifelse(nhanes2$height<nhanes2$c2,
                                     2,
@@ -145,21 +144,20 @@ bootstrap_syn <- function(B, bootdata){
       npositive<-dati[dati$agelt8==1,]
 
       # Fit outcome model for positive region, use it to impute those missing in positive region
-      out.model  <- glm(sbp ~ miss*as.factor(age), data=positive)
-      positive.miss <- subset(positive, (is.na(positive[,'sbp'])))
-      positive.miss$miss <- 0
-      positive.miss$sbp <- predict(out.model,positive.miss, type="response")
-      positive.nmiss <- subset(positive, (!is.na(positive[,'sbp'])))
-      positive.all <- rbind(positive.nmiss, positive.miss)
-
+      out.model  <- glm(sbp ~ as.factor(age) - 1, data=positive,
+                        weights=positive$sample_weight)
+      positive$sbp_hat <- predict(out.model, positive)
+      
       #get a random draw from mathematical model for nonpositive region
-      npositive$sbp <- rnorm(nrow(npositive), mean=npositive$norm_mean, sd=npositive$norm_sd)
-
+      npositive$sbp_hat <- rnorm(nrow(npositive), 
+                                 mean=npositive$norm_mean, 
+                                 sd=npositive$norm_sd)
+        
       #combine
-      allimputed <- rbind(positive.all,npositive)
+      allimputed <- rbind(positive, npositive)
 
       #store weighted mean
-      boot.est [i] <- sum(allimputed$sbp * allimputed$sample_weight) / sum(allimputed$sample_weight)
+      boot.est[i] <- sum(allimputed$sbp_hat * allimputed$sample_weight) / sum(allimputed$sample_weight)
     }
     return(boot.est)
   }

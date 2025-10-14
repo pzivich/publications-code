@@ -11,11 +11,11 @@ library(resample)
 library(dplyr)
 
 
-###############################################
-# Setting up data
+##########################################################
+##### Setting up data
+##########################################################
 
-setwd("C:/Users/zivic/Documents/open-source/publications-code/SynthesisMNTE")
-nhanes <- read.csv("data/nhanes.csv")
+nhanes <- read.csv("nhanes.csv")
 nhanes$height = nhanes$height / 2.54
 nhanes <- nhanes[!is.na(nhanes$height) & !is.na(nhanes$weight), ]
 nhanes$agelt8 <- ifelse(nhanes$age<8, 1, 0)
@@ -85,8 +85,8 @@ extrap.est.all
 ##########################################################
 
 ### bring in data for mathematical model for children 2-7
-height.params <- read.csv("data/height_params.csv")
-sbp_params <- read.csv("data/sbp_params.csv")
+height.params <- read.csv("height_params.csv")
+sbp_params <- read.csv("sbp_params.csv")
 sbp_params <- within(sbp_params, rm("code"))
 
 #first, add height cutoffs to the dataset
@@ -126,9 +126,10 @@ bootstrap_syn <- function(B, bootdata){
             
             # Fit outcome model for positive region, use it to impute those missing in positive region
             out.model  <- glm(sbp ~ female*(age + age_sp1 + age_sp2 
-                                              + height + h_sp1 + h_sp2 
-                                              + weight + w_sp1 + w_sp2), 
-                              data=positive)
+                                            + height + h_sp1 + h_sp2
+                                            + weight + w_sp1 + w_sp2),
+                              data=positive,
+                              weights=positive$sample_weight)
             positive$sbp_hat <- predict(out.model, positive, type="response")
 
             #get a random draw from mathematical model for nonpositive region
@@ -157,7 +158,6 @@ syn.all <- as.data.frame(cbind(syn.est, syn.LCL, syn.UCL))
 syn.all$type <- "Synthesis"
 syn.all$se <- NA
 names(syn.all) <- c('est', 'LCL', 'UCL', 'type', 'se')
-syn.all
 
 # Output 
 #
@@ -165,4 +165,4 @@ syn.all
 #  100.7531 1.55831 97.69881 103.8074 Extrapolated
 # 
 #      est      LCL     UCL      type se
-# 99.96303 99.41002 100.506 Synthesis NA
+# 100.4801 99.94589 101.0217 Synthesis NA
