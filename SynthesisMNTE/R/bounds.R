@@ -14,10 +14,9 @@ library(dplyr)
 ###############################################
 # Setting up data
 
-setwd("C:/Users/zivic/Documents/open-source/publications-code/SynthesisMNTE")
-nhanes <- read.csv("data/nhanes.csv")
-nhanes$agelt8 <- ifelse(nhanes$age<8, 1, 0)
+nhanes <- read.csv("nhanes.csv")
 
+nhanes$agelt8 <- ifelse(nhanes$age<8, 1, 0)
 nhanes$age8 <- ifelse(nhanes$age == 8, 1, 0)
 nhanes$age9 <- ifelse(nhanes$age == 9, 1, 0)
 nhanes$age10 <- ifelse(nhanes$age == 10, 1, 0)

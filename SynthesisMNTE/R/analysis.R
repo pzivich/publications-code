@@ -48,19 +48,6 @@ cc.est.all$type <- "Complete Case"
 ##### Extrapolation, mean SPB
 ##########################################################
 
-#first, fit model predicting SBP based on age group
-stat.model <- glm(sbp ~ miss*age, data=nhanes, weights=sample_weight)
-
-#extrapolate predictions to those missing sbp
-nhanes.miss <- subset(nhanes, (is.na(nhanes[,'sbp'])))
-nhanes.miss$miss <- 0
-nhanes.miss$sbp <- predict(stat.model,nhanes.miss, type="response")
-#note: warning about rank-deficient fit is expected because of inclusion of missing indicator in the model
-
-#combine with complete case data to estimate the weighted mean
-nhanes.extrap <- rbind(nhanes.cc, nhanes.miss)
-nhanes.extrap.mean <- sum(nhanes.extrap$sbp * nhanes.extrap$sample_weight) / sum(nhanes.extrap$sample_weight)
-
 #estimate the variance using M-estimation (geex package)
 estfun_extrap <- function(data, models){
   W <- data$sample_weight
@@ -72,20 +59,13 @@ estfun_extrap <- function(data, models){
   out_scores <- grab_psiFUN(models$out, data)
   out_pos <- 1:ncol(Xmat)
 
-  #create a design matrix for model predictions, where everyone has a non-missing indicator (so that they get imputed)
-  data2 <- data
-  data2$miss <- 0
-  Xmat.imp <- grab_design_matrix(data=data2, rhs_formula=grab_fixed_formula(models$out))
-
   function(theta){
       p <- length(theta)
       #get predicted values from model for everyone
-      pred.sbp <- Xmat.imp %*% theta[out_pos]
-      #keep observed Y if not missing, imputed Y if missing
-      Y.imp <- ifelse(M==0,Y,pred.sbp)
+      Y.imp <- Xmat %*% theta[out_pos]
 
       #estimating equations
-      c(W*out_scores(theta[out_pos]),
+      c(W*out_scores(theta[out_pos])*(1-M),
         W*(Y.imp-theta[p]))
   }
 }
@@ -98,7 +78,7 @@ geex_extrap <- function(data, out_formula){
   geex_results_extrap <- m_estimate(
     estFUN = estfun_extrap,
     data = data,
-    root_control = setup_root_control(start=c(coef(out_model), nhanes.extrap.mean)),
+    root_control = setup_root_control(start=c(coef(out_model), 100)),
     outer_args = list(models = models))
   return(geex_results_extrap)
 }
@@ -108,7 +88,7 @@ nhanes.hold <- nhanes
 nhanes.hold$sbp <- ifelse(nhanes$miss==1, 999, nhanes$sbp)
 
 #run the M-estimation code to get standard error
-extrap.res <- geex_extrap(nhanes.hold, sbp ~ miss*age)
+extrap.res <- geex_extrap(nhanes.hold, sbp ~ age)
 
 #format output and compute CIs
 extrap.est <- extrap.res@estimates[length(extrap.res@estimates)]
@@ -185,8 +165,8 @@ bootstrap_syn <- function(B, bootdata){
   }
 }
 
-#run the function with 20000 bootstraps
-syn.boots <- bootstrap_syn(20000, nhanes3)
+#run the function with 10000 bootstraps
+syn.boots <- bootstrap_syn(10000, nhanes3)
 
 #format output and compute CIs
 syn.est <- median(syn.boots)

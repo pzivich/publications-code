@@ -101,7 +101,7 @@ bootstrap_diagnostic <- function(B, bootdata){
 }
 
 #run the function with 10000 bootstraps
-syn.diagnostic <- bootstrap_diagnostic(20000, nhanes4)
+syn.diagnostic <- bootstrap_diagnostic(10000, nhanes4)
 
 #format output and compute CIs
 syn.diagnostic.est <- apply(syn.diagnostic, 1, median, na.rm=F)
