@@ -48,7 +48,8 @@ Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in sel
 
 ### ImprovedPooledLogit
 Zivich PN, Klose M, DeMonte JB, Shook-Sa BE, Cole SR, Edwards JK. "An Improved Pooled Logistic Regression
-Implementation". *Submitted*.
+Implementation". *Epidemiology* 2025; 
+[![PubMed](https://img.shields.io/badge/PubMed-39191643-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/41490323/)
 
 ### M-estimator_ICE
 Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich variance estimator for iterated conditional
@@ -72,6 +73,10 @@ Assumptions Using Nonparametric Bounds". *Submitted*.
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
 logistic regression". *Submitted*.
 [![arXiv](https://img.shields.io/badge/arXiv-2504.13291-b31b1b.svg)](https://arxiv.org/abs/2504.13291)
+
+### PooledLogitMultinom
+Neuroth LM, Swilley-Martinez ME, Zivich PN, Edwards JK. "Pooled multinomial logistic regression for parametric 
+g-computation in the presence of competing events". *Submitted*.
 
 ### PooledTestingSARS2
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
