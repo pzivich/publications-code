@@ -56,6 +56,10 @@ Zivich PN, Ross RK, Shook-Sa BE, Cole SR, Edwards JK. "Empirical sandwich varian
 expectation g-computation". *Statistics in Medicine* 2024;43(29):5562-5572.
 [![PubMed](https://img.shields.io/badge/PubMed-39489722-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39489722/)
 
+### MathModelID
+Zivich PN "Towards a Unified Framework for Statistical and Mathematical Modeling" *Submitted*
+[![arXiv](https://img.shields.io/badge/arXiv-2511.01960-b31b1b.svg)](https://arxiv.org/abs/2511.01960)
+
 ### MissingDataEpi
 Cole SR, Zivich PN, Edwards JK, Ross RK, Shook-Sa BE, Price JT, Stringer JSA. "Missing Outcome Data in Epidemiologic
 Studies". *American Journal of Epidemiology*. 2023;192(1):6-10.
