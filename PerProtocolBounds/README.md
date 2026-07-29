@@ -1,4 +1,4 @@
-# Estimating Per-Protocol Effects with Fewer Assumptions Using Nonparametric Bounds
+# Computing assumption-lean bounds for per-protocol effects
 
 ### Paul N Zivich, Jessie K Edwards, Valerie A Lucas, Bonnie E Shook-Sa, M Alan Brookhart, Stephen R Cole
 

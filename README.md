@@ -5,6 +5,8 @@ long-term storage and future reference. In addition to GitHub, all code is store
 
 [![DOI](https://zenodo.org/badge/258263929.svg)](https://zenodo.org/badge/latestdoi/258263929)
 
+----
+
 ## Manifesto
 
 ### AssortativityBias
@@ -24,12 +26,11 @@ Zivich PN. "Invited Commentary: The Seedy Side of Causal Effect Estimation with 
 [![PubMed](https://img.shields.io/badge/PubMed-39150866-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39150866/)
 
 ### ClusteringEE
-
 Zivich PN, Edwards JK, Shook-SA BE, Cole SR. "A Simplified Strategy for Handling Incidental Clustering". *Submitted*.
 
 ### ConfRegions
 Zivich PN, Cole SR, Greifer N, Montoya LM, Kosorok MR, Edwards JK. "Confidence Regions for Multiple Outcomes, Effect
-Modifiers, and Other Multiple Comparisons". *Submitted*.
+Modifiers, and Other Multiple Comparisons". *American Journal of Epidemiology* In-Press
 [![arXiv](https://img.shields.io/badge/arXiv-2510.07076-b31b1b.svg)](https://arxiv.org/abs/2510.07076)
 
 ### DoubleCrossFit
@@ -62,7 +63,7 @@ expectation g-computation". *Statistics in Medicine* 2024;43(29):5562-5572.
 [![PubMed](https://img.shields.io/badge/PubMed-39489722-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39489722/)
 
 ### MathModelID
-Zivich PN "Towards a Unified Framework for Statistical and Mathematical Modeling" *Submitted*
+Zivich PN "Unifying Statistical and Mathematical Modeling Through a Causal Inference Lens" *Patterns* In-Press
 [![arXiv](https://img.shields.io/badge/arXiv-2511.01960-b31b1b.svg)](https://arxiv.org/abs/2511.01960)
 
 ### MissingDataEpi
@@ -75,8 +76,8 @@ Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemio
 [![PubMed](https://img.shields.io/badge/PubMed-39358996-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/39358996/)
 
 ### PerProtocolBounds
-Zivich PN, Edwards JK, Lucas VA, Shook-Sa BE, Brookhart MA, Cole SR. "Estimating Per-Protocol Effects with Fewer
-Assumptions Using Nonparametric Bounds". *Submitted*.
+Zivich PN, Edwards JK, Lucas VA, Shook-Sa BE, Brookhart MA, Cole SR. "Computing assumption-lean bounds for per-protocol 
+effects". *Trials*. In-Press
 
 ### PooledLogitEE
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
@@ -128,9 +129,12 @@ of statistical and simulation modeling". *Epidemiology* 2024;35(1):23-31.
 [![PubMed](https://img.shields.io/badge/PubMed-37757864-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/37757864/)
 
 ### TwisterPlots
-Zivich PN, Cole SR, Breskin, A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
+Zivich PN, Cole SR, Breskin A. "Twister Plots for Time-to-Event Studies". *American Journal of Epidemiology*. 
 2021;190(12): 2730-2731.
 [![PubMed](https://img.shields.io/badge/PubMed-34508263-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/34508263/)
+
+### TutorialEE
+Zivich PN, Ross RK, Cole SR Naimi AI, Edwards JK. "Estimating Equation Essentials". *Submitted*
 
 ### networkTMLE
 Zivich PN, Hudgens MG, Brookhart MA, Moody J, Weber DJ, Aiello AE. "Targeted maximum likelihood estimation of causal
