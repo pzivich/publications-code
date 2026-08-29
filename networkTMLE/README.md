@@ -35,18 +35,30 @@ Dependencies for `NetworkTMLE` consists of
 - `patsy v0.5+`
 - `scipy`
 - `NetworkX v2.x`
+- `Python 3.8.*`
 
 *NOTE:* `NetworkTMLE` and `Beowulf` may not work with versions of NetworkX before 2.0 or after 3.0
 
 ### Install
 
-To use `NetworkTMLE`, download this folder path of the git repository. Be sure to install the
-previous dependences (the package doesn't install those libraries by default). Install both the 
-`amonhen` and `beowulf` via the following:
+Create a virtual environment.
 
 ```
-python -m pip install AmonHen
-python -m pip install Beowulf
+python -m venv ./networkTMLE_env
+source ./networkTMLE_env/bin/activate
+
+```
+
+Clone the repository and `cd` into the repo.
+```
+git clone https://github.com/pzivich/publications-code.git
+cd publications-code
+
+```
+
+Install the required packages.  This includes the included `amonhen` and `beowulf` packages.
+```
+pip install -r requirements.txt
 ```
 
 These are both custom libraries which contain all the functionalities for network-TMLE (`amonhen`)
