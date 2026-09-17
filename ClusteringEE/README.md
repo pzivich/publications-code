@@ -19,6 +19,12 @@
 `application.R`
 - R code walking through the applied example from the paper
 
+`example_a1.ipynb`
+- Python JuPyter notebook walking through the first additional example in the appendix
+
+`example_a2.ipynb`
+- Python JuPyter notebook walking through the second additional example in the appendix
+
 --------------------------------
 
 ## System Details
