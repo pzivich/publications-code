@@ -2,7 +2,6 @@
 # Estimating Equation Essentials -- R
 #   R code to replicate the example described in the text
 #
-# Paul Zivich (last edit: 2026/07/29)
 ###################################################################################################################
 
 ############################################

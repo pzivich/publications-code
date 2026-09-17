@@ -2,7 +2,6 @@
 Estimating Equation Essentials -- SAS
     SAS code to replicate the example described in the text
 
-Paul Zivich & Rachael Ross (last edit: 2026/06/15)
 *******************************************************************************************************************/
 
 
