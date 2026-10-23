@@ -31,7 +31,7 @@ Zivich PN, Edwards JK, Shook-SA BE, Cole SR. "A Simplified Strategy for Handling
 ### ConfRegions
 Zivich PN, Cole SR, Greifer N, Montoya LM, Kosorok MR, Edwards JK. "Confidence Regions for Multiple Outcomes, Effect
 Modifiers, and Other Multiple Comparisons". *American Journal of Epidemiology* In-Press
-[![arXiv](https://img.shields.io/badge/arXiv-2510.07076-b31b1b.svg)](https://arxiv.org/abs/2510.07076)
+[![PubMed](https://img.shields.io/badge/PubMed-42470090-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/42470090/)
 
 ### DoubleCrossFit
 Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cross-fit estimators". *Epidemiology*. 
@@ -39,8 +39,9 @@ Zivich PN, Breskin A. "Machine learning for causal inference: on the use of cros
 [![PubMed](https://img.shields.io/badge/PubMed-33591058-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/33591058/)
 
 ### FusedCohortStudies
-Cole SR, Zivich PN, Shook-Sa BE, Richardson DB, Hudgens MG, Edwards JK. "Fusing Observational Studies to Reduce
-Multiple Biases". *Epidemiology*. 2026; In-Press.
+Cole SR, Zivich PN, Shook-Sa BE, Richardson DB, Hudgens MG, Edwards JK. "Combining Observational Studies to Reduce 
+Multiple Biases". *Epidemiology*. 2026;37(5):565-574.
+[![PubMed](https://img.shields.io/badge/PubMed-42138357-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/42138357/)
 
 ### GCompMSM
 Zivich PN, Shook-Sa BE. "Estimating Marginal Structural Model Parameters for Time-Fixed, Binary Actions with
@@ -50,7 +51,7 @@ g-computation and Estimating Equations" *American Journal of Epidemiology* 2025;
 ### GCompSelection
 Zivich PN, Lu H. "Constructing g-computation estimators: two case studies in selection bias". *Epidemiology* 
 2025;37(1):50–56.
-[![arXiv](https://img.shields.io/badge/PubMed-41342792-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/41342792/)
+[![PubMed](https://img.shields.io/badge/PubMed-41342792-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/41342792/)
 
 ### ImprovedPooledLogit
 Zivich PN, Klose M, DeMonte JB, Shook-Sa BE, Cole SR, Edwards JK. "An Improved Pooled Logistic Regression
@@ -77,16 +78,17 @@ Zivich PN, Naimi A. "A Primer on Neural Networks". *American Journal of Epidemio
 
 ### PerProtocolBounds
 Zivich PN, Edwards JK, Lucas VA, Shook-Sa BE, Brookhart MA, Cole SR. "Computing assumption-lean bounds for per-protocol 
-effects". *Trials*. In-Press
+effects". *Trials* 2026;27:625.
 
 ### PooledLogitEE
 Zivich PN, Cole SR, Shook-Sa BE, DeMonte JB, Edwards JK. "Estimating equations for survival analysis with pooled
-logistic regression". *Submitted*.
+logistic regression". *Submitted* 2026.
 [![arXiv](https://img.shields.io/badge/arXiv-2504.13291-b31b1b.svg)](https://arxiv.org/abs/2504.13291)
 
 ### PooledLogitMultinom
 Neuroth LM, Swilley-Martinez ME, Zivich PN, Edwards JK. "Pooled multinomial logistic regression for parametric 
-g-computation in the presence of competing events". *Epidemiology* 2026; In-Press.
+g-computation in the presence of competing events". *Epidemiology* 2026;37(5):591-595.
+[![PubMed](https://img.shields.io/badge/PubMed-42525475-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/42525475/)
 
 ### PooledTestingSARS2
 Filitreau LM, Zivich PN, Edwards JK, Mulholland GE, Max R, Westreich D. "Optimizing SARS-CoV-2 pooled testing strategies
@@ -120,8 +122,8 @@ with a continuous covariate" *J R Stat Soc Ser A Stat Soc* 2024;188(1):158-180.
 
 ### SynthesisMNTE
 Zivich PN, Shook-Sa BE, Cole SR, Lofgren ET, Edwards JK. "Account for Missing Data in Public Health Research
-Using a Synthesis of Statistical and Mathematical Models" * J Epidemiol Community Health* 2026;80(5):352-356.
-[![arXiv](https://img.shields.io/badge/PubMed-41513267-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/41513267/)
+Using a Synthesis of Statistical and Mathematical Models" *J Epidemiol Community Health* 2026;80(5):352-356.
+[![PubMed](https://img.shields.io/badge/PubMed-41513267-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/41513267/)
 
 ### TransportNoPositivity
 Zivich PN, Edwards JK, Lofgren ET, Cole SR, Shook-Sa BE, Lessler J. "Transportability without positivity: a synthesis
