@@ -15,6 +15,11 @@ Outcomes: A Simulated Example in the Context of Vaccination". *American Journal 
 2021;190(11):2442-2452.
 [![PubMed](https://img.shields.io/badge/PubMed-34089053-0047AB.svg)](https://pubmed.ncbi.nlm.nih.gov/34089053/)
 
+### AugmentTrial
+Yin DE, Zivich PN, Giganti MJ, Wu D, Edwards JK, Cole SR. "Combining Randomized and Observational Data: The Case of 
+Postnatal Prophylaxis Against HIV". *Submitted*
+[![medRxiv](https://img.shields.io/badge/medRxiv-2026.10.15.26365628-b31b1b.svg)](https://www.medrxiv.org/content/10.64898/2026.10.15.26365628v1)
+
 ### BridgeComparisonIntro
 Zivich PN, Cole SR, Edwards JK, Shook-Sa BE, Breskin A, and Hudgens MG. "Bridged treatment comparisons: an illustrative
 application in HIV treatment". *American Journal of Epidemiology* 2025; 194(6):1687-1694.
