@@ -7,8 +7,11 @@
 ## File Manifesto
 
 `data/`
+- `actg.csv`: Processed data set used for the appendix 3.1
 - `cbihs.csv`: Processed data set used for the applied example
-- `setup_data.py`: Script used to process the publicly-available data set
+- `ohie_sample.csv`: Processed data set used for the appendix 3.3
+- `setup_data.py`: Script used to process the publicly-available CBIHS data set
+- `warfarin.csv`: Processed data set used for the appendix 3.2
 
 `simulations/`
 - `sims.py`: Python code that recreates all simulation experiments reported in the paper
@@ -20,10 +23,13 @@
 - R code walking through the applied example from the paper
 
 `example_a1.ipynb`
-- Python JuPyter notebook walking through the first additional example in the appendix
+- Python JuPyter notebook walking through the example in the appendix 3.1
 
 `example_a2.ipynb`
-- Python JuPyter notebook walking through the second additional example in the appendix
+- Python JuPyter notebook walking through the example in the appendix 3.2
+
+`example_a3.ipynb`
+- Python JuPyter notebook walking through the example in the appendix 3.3
 
 --------------------------------
 
